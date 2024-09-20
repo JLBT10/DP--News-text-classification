@@ -1,14 +1,30 @@
-""" Implementing an API to test the model"""
-from inference import predict
+# Implementing an API to test the news classification model
+from transformers import pipeline
 import uvicorn
 from fastapi import FastAPI
 import gradio as gr
 
-
+# Initialize FastAPI app
 app = FastAPI()
 
+def predict(prompt, path_to_model="/src/runs/best_model"):
+    """
+    Function to make predictions using the loaded model
+    """
+    # Create a text classification pipeline using the specified model
+    pipe = pipeline("text-classification", model=path_to_model)
+    
+    # Make a prediction
+    output = pipe(prompt)
+    
+    # Convert the score to a percentage and round to 2 decimal places
+    output[0]["score"] = f"{round(output[0]['score'] * 100, 2)}%"
+    
+    # Return the prediction result
+    return {"answer": output[0]}
+
 def make_prediction(prompt):
-    """ Make the prediction """
+    """ Wrapper function to make the prediction """
     return predict(prompt)
 
 # Set up the Gradio interface
@@ -25,9 +41,12 @@ def read_root():
     """ Welcome page of the API """
     return {'message': 'Welcome to the model API, to access the interface go to localhost:8000/predict .'}
 
-#Mounting the gradio app
+# Mount the Gradio app to the FastAPI app
 app = gr.mount_gradio_app(app, iface, path="/predict")
 
 if __name__ == "__main__":
-    uvicorn.run( app="api:app", host="0.0.0.0", port=8000 )
-     #uvicorn.run(app="api:app", host=os.getenv("UVICORN_HOST"), port=int(os.getenv("UVICORN_PORT")))
+    # Run the FastAPI app using Uvicorn
+    uvicorn.run(app="api:app", host="0.0.0.0", port=8000)
+    
+    # Alternative way to run the app using environment variables
+    # uvicorn.run(app="api:app", host=os.getenv("UVICORN_HOST"), port=int(os.getenv("UVICORN_PORT")))
