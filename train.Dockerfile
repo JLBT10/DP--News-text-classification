@@ -1,13 +1,19 @@
+# Base image with Nvidia driver
 FROM nvcr.io/nvidia/driver:550-5.15.0-1065-nvidia-ubuntu22.04
 
+# Set the working directory
 WORKDIR /src
 
-#COPY requirements.txt /src
-RUN apt-get update \
-   && apt-get upgrade -y
-RUN add-apt-repository universe 
-RUN apt-get install -y python3.8-dev python3.8
+# Update and upgrade system packages
+RUN apt-get update && apt-get upgrade -y
 
-    #&& apt-get install -y python3-pip \
-    #&& python3.8 -m pip install --upgrade pip \
+# Install Python 3.8 and necessary development tools
+RUN apt-get install -y python3 python3-dev python3-pip
+
+# Copy requirements.txt to the working directory
+COPY requirements.txt /src
+
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+
+# You can add more instructions or commands here if needed
