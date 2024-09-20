@@ -1,0 +1,10 @@
+.env
+.DS_Store
+.dockerignore
+__pycache__/
+checkpoints/
+data/
+runs/
+test-trainer/
+dataset.py
+eda.ipynb
