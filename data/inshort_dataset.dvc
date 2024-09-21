@@ -1,0 +1,6 @@
+outs:
+- md5: 1f9c99fa26e067b959e2547a83fb09d8.dir
+  size: 412739187
+  nfiles: 197
+  hash: md5
+  path: inshort_dataset
