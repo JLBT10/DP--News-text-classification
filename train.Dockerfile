@@ -1,6 +1,5 @@
 # Base image with Nvidia driver
-FROM nvcr.io/nvidia/driver:550-5.15.0-1065-nvidia-ubuntu22.04
-
+FROM nvcr.io/nvidia/cuda:12.6.1-devel-ubuntu24.04
 # Set the working directory
 WORKDIR /src
 
@@ -14,6 +13,6 @@ RUN apt-get install -y python3 python3-dev python3-pip
 COPY requirements.txt /src
 
 # Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip3 install -r requirements.txt --break-system-packages
 
 # You can add more instructions or commands here if needed
