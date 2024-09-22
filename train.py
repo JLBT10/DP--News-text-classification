@@ -3,6 +3,9 @@ from transformers import (AutoModelForSequenceClassification,AutoTokenizer,
                         DataCollatorWithPadding, TrainingArguments, Trainer)
 from sklearn.metrics import f1_score
 from datasets import load_from_disk, ClassLabel
+import dvc.api
+import pandas as pd
+from io import StringIO
 
 # Custom function for splitting train/test
 from dataset import * 
@@ -47,8 +50,29 @@ def compute_metrics(p):
 
 if __name__ == '__main__':
         
+# Define the path to your dataset in the DVC-tracked repository
+    dataset_path = './data/inshort.csv'
+
+# Open the dataset file using dvc.api.open
+    with dvc.api.open(
+        dataset_path,
+        repo='https://github.com/JLBT10/NewsClassifier-BERT.git'
+    ) as f:
+
+        # Read the header first, skipping first 2 columns if necessary
+        columns = f.readline().strip().split('|')  # Skipping first two columns
+        inshort_data = pd.DataFrame(columns=columns)
+
+        # Process each remaining line in the file
+        for idx, line in enumerate(f):
+            line_process= line.strip().split('|')
+            if len(columns)==len(line_process):
+                inshort_data.loc[idx] = line_process
+            else:
+                print(line_process)
     # Load data
-    inshort_data = load_from_disk("./data/inshort_dataset")
+    #inshort_data = load_from_disk("./data/inshort_dataset")
+    inshort_data = turns_pandas_into_HF_dataset(inshort_data)
     inshort_data = inshort_data.shuffle(10).select(range(100))
     #Process the label
     inshort_data, label = label2int(inshort_data) # Turns str labels into id
