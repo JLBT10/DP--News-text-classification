@@ -15,7 +15,7 @@ jobs:
       - name: Install Python and pip
         uses: actions/setup-python@v3
         with:
-          python-version: '3.8'  # Use quotes around the version
+          python-version: '3.12.6'  # Use quotes around the version
          
       # Action 3: Installation of dependencies
       - name: Install dependencies
