@@ -8,3 +8,5 @@ test-trainer/
 dataset.py
 eda.ipynb
 test.py
+jup_env
+test.ipynb
