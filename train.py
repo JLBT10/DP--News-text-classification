@@ -1,4 +1,4 @@
-""" Training of the model """
+
 # Import necessary libraries
 
 #First party import
