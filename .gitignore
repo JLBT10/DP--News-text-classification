@@ -5,7 +5,6 @@ __pycache__/
 checkpoints/
 runs/
 test-trainer/
-dataset.py
 eda.ipynb
 test.py
 jup_env
