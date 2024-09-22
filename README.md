@@ -8,3 +8,4 @@ unzip inshort-news.zip
 # Make the classification
 
 #Make the classification directly with BERT and see the differences
+next
