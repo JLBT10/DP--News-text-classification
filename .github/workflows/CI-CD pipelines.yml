@@ -3,7 +3,7 @@ on:
   push
   
 jobs:
-  Build-docker-app:
+  Checking-code-quality:
     runs-on: ubuntu-latest
     steps:
     
@@ -26,4 +26,20 @@ jobs:
       # Action 4: Run pylint
       - name: Run pylint
         run: pylint train.py
+
+ # building-app-dockerfile:
+  #  runs-on: ubuntu-latest
+   # steps:
+      
+   #   # Action 1: Pull the code from GitHub
+   # - name: Checkout code
+   #   uses: actions/checkout@v3
+
+   # - name: building and launching app 
+   #   run:
+    #    docker build -f api.Dockerfile -t app_docker .
+    #    docker run -it app_docker
+        
+     
+      
 
