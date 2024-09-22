@@ -1,20 +1,23 @@
+""" Training of the model """
 # Import necessary libraries
-from transformers import (AutoModelForSequenceClassification, AutoTokenizer,
-                          DataCollatorWithPadding, TrainingArguments, Trainer)
-from sklearn.metrics import f1_score
-from datasets import load_from_disk, ClassLabel
+
+#First party import
 import dvc.api
 import pandas as pd
 import numpy as np  # Import before dataset
-from io import StringIO  # Import before dataset
-from dataset import *  # Adjust as needed, avoid wildcard imports
 
-# Function to tokenize the input text
-def tokenize_function(example):
-    return tokenizer(example["text"], truncation=True, padding=True)
+# Second party import
+from transformers import (AutoModelForSequenceClassification,
+AutoTokenizer, DataCollatorWithPadding, TrainingArguments, Trainer)
+from sklearn.metrics import f1_score
+from datasets import ClassLabel
+
+#Third party import
+from dataset import turns_pandas_into_HF_dataset, stratified_split_train_test
 
 # Function to map labels to integers
 def label2int(dataset):
+    """ convert label into integer"""
     # Get the unique labels
     label_list = dataset.unique("labels")
     # Define a ClassLabel feature
@@ -27,12 +30,14 @@ def label2int(dataset):
 
 # Function to create mapping of label to id and id to label
 def label2id_id2label(label_feature):
-    label2id = {v: k for k, v in enumerate(label_feature.names)}  # Mapping label to id
-    id2label = {v: k for k, v in label2id.items()}  # Mapping id to label
-    return label2id, id2label
+    """ mapping label to id and id to label"""
+    label2id_ = {v: k for k, v in enumerate(label_feature.names)}  # Mapping label to id
+    id2label_ = {v: k for k, v in label2id.items()}  # Mapping id to label
+    return label2id_, id2label_
 
 # Function to compute metrics
 def compute_metrics(p):
+    """Overriding of the compute metrics so that it outs f1 score """
     # Extract predictions from the output
     preds = p.predictions if isinstance(p.predictions, tuple) else p.predictions
     # Convert predictions to class indices
@@ -43,10 +48,10 @@ def compute_metrics(p):
 
 if __name__ == '__main__':
     # Define the path to your dataset in the DVC-tracked repository
-    dataset_path = './data/inshort.csv'
+    DATASET_PATH = './data/inshort.csv'
 
     # Open the dataset file using dvc.api.open
-    with dvc.api.open(dataset_path, repo='https://github.com/JLBT10/NewsClassifier-BERT.git') as f:
+    with dvc.api.open(DATASET_PATH , repo='https://github.com/JLBT10/NewsClassifier-BERT.git') as f:
         # Read the header first
         columns = f.readline().strip().split('|')
         inshort_data = pd.DataFrame(columns=columns)
@@ -71,13 +76,20 @@ if __name__ == '__main__':
     inshort_data = stratified_split_train_test(inshort_data)
 
     # Model name
-    checkpoint = "bert-base-cased"
+    CHECKPOINT = "bert-base-cased"
 
     # Loading the tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(checkpoint)
+    tokenizer = AutoTokenizer.from_pretrained(CHECKPOINT)
+
+
+    # Function to tokenize the input text
+    def tokenize_function(example):
+        """Tokenize text"""
+        return tokenizer(example["text"], truncation=True, padding=True)
 
     # Loading the model
-    model = AutoModelForSequenceClassification.from_pretrained(checkpoint, num_labels=7, label2id=label2id, id2label=id2label)
+    model = AutoModelForSequenceClassification.from_pretrained(CHECKPOINT, num_labels=7,
+     label2id=label2id, id2label=id2label)
 
     # Tokenization of data
     tokenized_datasets = inshort_data.map(tokenize_function, batched=True)
