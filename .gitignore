@@ -3,7 +3,6 @@
 .dockerignore
 __pycache__/
 checkpoints/
-data/
 runs/
 test-trainer/
 dataset.py
