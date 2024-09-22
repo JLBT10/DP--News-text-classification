@@ -1,28 +1,29 @@
-name : CI-CD Pipeline
+name: CI-CD Pipeline
 on:
   push
   
 jobs:
   Build-docker-app:
-    runs-on: ubuntu
+    runs-on: ubuntu-latest
     steps:
     
-      # Action 1 : Pull the code from github
-      -name: checkout code
-       uses: actions/checkout@v3
+      # Action 1: Pull the code from GitHub
+      - name: Checkout code
+        uses: actions/checkout@v3
        
-      # Action 2 : installation of python and pip
-      -name: Install python and pip
-       uses: actions/setup-python@v3
-         with: python-version:3.8
+      # Action 2: Installation of Python and pip
+      - name: Install Python and pip
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.8'  # Use quotes around the version
          
-      # Action 3 : Installation of dependencies
-      -name: Install dependencies
-       run:
-         pip install pylint
-         pip install -r requirements.txt
+      # Action 3: Installation of dependencies
+      - name: Install dependencies
+        run: |
+          pip install pylint
+          pip install -r requirements.txt
          
-      # Action 4 : 
-      -name: Run pylint
-      run:
-        pylint train.py
+      # Action 4: Run pylint
+      - name: Run pylint
+        run: pylint train.py
+
