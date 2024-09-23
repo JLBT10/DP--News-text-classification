@@ -32,7 +32,7 @@ def label2int(dataset):
 def label2id_id2label(label_feature):
     """ mapping label to id and id to label"""
     label2id_ = {v: k for k, v in enumerate(label_feature.names)}  # Mapping label to id
-    id2label_ = {v: k for k, v in label2id.items()}  # Mapping id to label
+    id2label_ = {v: k for k, v in label2id_.items()}  # Mapping id to label
     return label2id_, id2label_
 
 # Function to compute metrics
@@ -133,7 +133,7 @@ if __name__ == '__main__':
     )
 
     # On se connecte à l'interface UI et la base de donnée
-    mlflow.set_tracking_uri("http://127.0.0.1:5000/")
+    mlflow.set_tracking_uri("sqlite:///mlflow.db")
 
     # On donne un nom à l'expérience
     mlflow.set_experiment("classification of news")
