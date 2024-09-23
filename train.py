@@ -5,7 +5,7 @@
 import dvc.api
 import pandas as pd
 import numpy as np  # Import before dataset
-
+import mlflow
 # Second party import
 from transformers import (AutoModelForSequenceClassification,
 AutoTokenizer, DataCollatorWithPadding, TrainingArguments, Trainer)
@@ -132,5 +132,20 @@ if __name__ == '__main__':
         compute_metrics=compute_metrics
     )
 
+    # On se connecte à l'interface UI et la base de donnée
+    mlflow.set_tracking_uri("http://127.0.0.1:5000/")
+
+    # On donne un nom à l'expérience
+    mlflow.set_experiment("classification of news")
+
+    # On commence l'experience
+    mlflow.start_run()
+
     trainer.train()
     trainer.save_model("./runs/best_model")
+
+    # Log the model
+    mlflow.pytorch.log_model(model, "model")
+
+    # End the MLflow run
+    mlflow.end_run()
