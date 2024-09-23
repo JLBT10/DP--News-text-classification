@@ -9,3 +9,7 @@ eda.ipynb
 test.py
 jup_env
 test.ipynb
+mlruns/
+flagged/
+d/
+mlflow.db
