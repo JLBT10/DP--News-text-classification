@@ -11,10 +11,10 @@ from transformers import (AutoModelForSequenceClassification,
 AutoTokenizer, DataCollatorWithPadding, TrainingArguments, Trainer)
 from sklearn.metrics import f1_score
 from datasets import ClassLabel
+import torch
 
 #Third party import
-from dataset import turns_pandas_into_HF_dataset, stratified_split_train_test
-
+from utils.dataset import turns_pandas_into_HF_dataset, stratified_split_train_test
 # Function to map labels to integers
 def label2int(dataset):
     """ convert label into integer"""
@@ -100,10 +100,12 @@ if __name__ == '__main__':
     # Data Collator with padding
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
+
+
     # Training Arguments
     training_args = TrainingArguments(
         output_dir="./checkpoints",
-        use_mps_device=True,
+        use_mps_device=False,
         num_train_epochs=1,
         per_device_train_batch_size=16,
         per_device_eval_batch_size=16,
@@ -131,21 +133,41 @@ if __name__ == '__main__':
         tokenizer=tokenizer,
         compute_metrics=compute_metrics
     )
-
-    # On se connecte à l'interface UI et la base de donnée
-    mlflow.set_tracking_uri("sqlite:///mlflow.db")
-
-    # On donne un nom à l'expérience
-    mlflow.set_experiment("classification of news")
-
-    # On commence l'experience
-    mlflow.start_run()
-
     trainer.train()
     trainer.save_model("./runs/best_model")
 
-    # Log the model
-    mlflow.pytorch.log_model(model, "model")
+ 
 
-    # End the MLflow run
-    mlflow.end_run()
+    # On donne un nom à l'expérience
+    #experiment =  
+    mlflow.set_experiment(experiment_name="bou")
+    #experiment_id = mlflow.create_experiment(name="test")
+    # On commence l'experience
+    # On se connecte à l'interface UI et la base de donnée
+    #mlflow.set_tracking_uri("http://localhost:5000")
+    mlflow.set_tracking_uri("sqlite:///mlflow.db") 
+    with mlflow.start_run(run_name="Logging params"):#,experiment_id=experiment.experiment_id) as runs:
+        parameters = { "output_dir":"./checkpoints",
+                "use_mps_device":False,
+                "num_train_epochs":1,
+                "per_device_train_batch_size":16,
+                "per_device_eval_batch_size":16,
+                "weight_decay":1e-2,
+                "logging_dir":"./save_model/logs",
+                "load_best_model_at_end":True,
+                "learning_rate":5e-6,
+                "do_predict":True,
+                "save_total_limit":2,
+                "save_strategy":"epoch",
+                "evaluation_strategy":"epoch",
+                "metric_for_best_model":"loss",
+                "overwrite_output_dir":True,
+                "greater_is_better":False,
+                "do_eval":True
+                }
+        # Log the model
+        #mlflow.pytorch.log_model(model,"model")
+
+        # Log a single metric 
+        mlflow.log_params(parameters)
+        mlflow.log_artifacts(local_dir="./runs/best_model",artifact_path="model") 

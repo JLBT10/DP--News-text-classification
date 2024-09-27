@@ -12,3 +12,4 @@ test.ipynb
 mlruns/
 d/
 mlflow.db
+.env.newsclassifier/

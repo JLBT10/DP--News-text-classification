@@ -3,7 +3,7 @@ from transformers import pipeline
 import uvicorn
 from fastapi import FastAPI
 import gradio as gr
-
+import mlflow
 # Initialize FastAPI app
 app = FastAPI()
 
@@ -12,8 +12,11 @@ def predict(prompt, path_to_model="/src/runs/best_model"):
     Function to make predictions using the loaded model
     """
     # Create a text classification pipeline using the specified model
-    pipe = pipeline("text-classification", model=path_to_model)
     
+    run_id = "024e1d8189eb4c5abe4bc5107897b3f3"
+    model_uri = f"run:/{run_id}/model"
+    model = mlflow.pytorch. load_model(model_uri)
+    pipe = pipeline("text-classification", model=path_to_model)
     # Make a prediction
     output = pipe(prompt)
     
