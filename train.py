@@ -1,173 +1,118 @@
 """ Training of the model """
-# Import necessary libraries
 
-#First party import
-import dvc.api
-import pandas as pd
-import numpy as np  # Import before dataset
+### Import necessary libraries
 import mlflow
-# Second party import
-from transformers import (AutoModelForSequenceClassification,
-AutoTokenizer, DataCollatorWithPadding, TrainingArguments, Trainer)
-from sklearn.metrics import f1_score
-from datasets import ClassLabel
 import torch
 
-#Third party import
-from utils.dataset import turns_pandas_into_HF_dataset, stratified_split_train_test
-# Function to map labels to integers
-def label2int(dataset):
-    """ convert label into integer"""
-    # Get the unique labels
-    label_list = dataset.unique("labels")
-    # Define a ClassLabel feature
-    label_feature = ClassLabel(names=label_list)
-    # Map the labels to integers
-    dataset = dataset.map(lambda example: {"labels": label_feature.str2int(example["labels"])})
-    # Assign the ClassLabel feature to the 'labels' column
-    dataset = dataset.cast_column("labels", label_feature)
-    return dataset, label_feature
+# Transformers Library Imports
+from transformers import (
+    AutoModelForSequenceClassification,
+    AutoTokenizer,
+    DataCollatorWithPadding,
+    TrainingArguments,
+    Trainer, pipeline
+)
+from datasets import ClassLabel
 
-# Function to create mapping of label to id and id to label
-def label2id_id2label(label_feature):
-    """ mapping label to id and id to label"""
-    label2id_ = {v: k for k, v in enumerate(label_feature.names)}  # Mapping label to id
-    id2label_ = {v: k for k, v in label2id_.items()}  # Mapping id to label
-    return label2id_, id2label_
-
-# Function to compute metrics
-def compute_metrics(p):
-    """Overriding of the compute metrics so that it outs f1 score """
-    # Extract predictions from the output
-    preds = p.predictions if isinstance(p.predictions, tuple) else p.predictions
-    # Convert predictions to class indices
-    preds = np.argmax(preds, axis=1)
-    # Compute F1 score
-    f1 = f1_score(p.label_ids, preds, average='weighted')  # Use 'weighted' for multi-class
-    return {"f1_score": f1}
+# Project-Specific imports
+from utils.metrics import compute_metrics
+from utils.dataset import load_with_dvc
+from utils.general import select_n_rows
+from utils.labels_processing import *
+from utils.map_functions import *
 
 if __name__ == '__main__':
-    # Define the path to your dataset in the DVC-tracked repository
-    DATASET_PATH = './data/inshort.csv'
+    ### Defining constant
+    DATASET_PATH = './data/inshort.csv' #Dataset path on github
+    CHECKPOINT = "bert-base-cased" # Name of the model
+    OUTPUT_MODEL_DIR = "./runs/best_model"
 
-    # Open the dataset file using dvc.api.open
-    with dvc.api.open(DATASET_PATH , repo='https://github.com/JLBT10/NewsClassifier-BERT.git') as f:
-        # Read the header first
-        columns = f.readline().strip().split('|')
-        inshort_data = pd.DataFrame(columns=columns)
+    ### Loading data using dvc ( data stored in s3)
+    inshort_data = load_with_dvc(DATASET_PATH, repo='https://github.com/JLBT10/NewsClassifier-BERT.git')
 
-        # Process each remaining line in the file
-        for idx, line in enumerate(f):
-            line_process = line.strip().split('|')
-            if len(columns) == len(line_process):
-                inshort_data.loc[idx] = line_process
-            else:
-                print(f"Line {idx} has mismatched columns: {line_process}")
+    ### Reducing the number of rows to process data faster for testing
+    inshort_data = select_n_rows(inshort_data,100)
 
-    # Load data
-    inshort_data = turns_pandas_into_HF_dataset(inshort_data)
-    inshort_data = inshort_data.shuffle(10).select(range(100))
+    ### Processing Labels
+    labels = inshort_data.unique("labels") # Get a list of unique labels
+    label2id, id2label = get_label2id_id2label(labels) # Get the mapping label2id and id2label
 
-    # Process the label
-    inshort_data, label = label2int(inshort_data)  # Turns str labels into id
-    label2id, id2label = label2id_id2label(label)  # Mapping dictionaries
+    features_class = ClassLabel(names=labels) #Define ClassLabel in order to stratified split wr to labels columns
+    inshort_data = inshort_data.cast_column("labels", features_class) # Insert it into the dataset columns
 
-    # Split the dataset into train and test
-    inshort_data = stratified_split_train_test(inshort_data)
-
-    # Model name
-    CHECKPOINT = "bert-base-cased"
-
-    # Loading the tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(CHECKPOINT)
+    ### Split the dataset into train and validation using labels columns to stratify (it handles imbalance)
+    inshort_data = inshort_data.train_test_split(test_size=0.3,shuffle=True, stratify_by_column="labels")
 
 
-    # Function to tokenize the input text
-    def tokenize_function(example):
-        """Tokenize text"""
-        return tokenizer(example["text"], truncation=True, padding=True)
+    ### Processing data
+    tokenizer = AutoTokenizer.from_pretrained(CHECKPOINT) # Loading the tokenizer
+        
+    tokenized_datasets = inshort_data.map(lambda df: tokenize_function(df,tokenizer), 
+     batched=True, remove_columns=["text"]) #Tokenization of sentences
 
-    # Loading the model
-    model = AutoModelForSequenceClassification.from_pretrained(CHECKPOINT, num_labels=7,
-     label2id=label2id, id2label=id2label)
 
-    # Tokenization of data
-    tokenized_datasets = inshort_data.map(tokenize_function, batched=True)
-
-    # Remove the "text" column
-    tokenized_datasets = tokenized_datasets.remove_columns(["text"])
-
-    # Data Collator with padding
+    ### Loading the model
+    model = AutoModelForSequenceClassification.from_pretrained(CHECKPOINT, num_labels=4,
+    label2id=label2id, id2label=id2label)
+    
+    ### Let's define the data collator for classification tasks
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
+    ### Tracking of experiment
+    mlflow.set_experiment(experiment_name="NewsClassifer") # Name of the experience
+    mlflow.set_tracking_uri("sqlite:///mlruns/mlflow.db") # Where to save the result
 
+    with mlflow.start_run() as run :
+    ### Preparation for trainings
+        training_args = TrainingArguments(
+            output_dir="./checkpoints",
+            use_mps_device=False,
+            num_train_epochs=1,
+            per_device_train_batch_size=16,
+            per_device_eval_batch_size=16,
+            weight_decay=1e-2,
+            logging_dir="./save_model/logs",
+            load_best_model_at_end=True,
+            learning_rate=5e-6,
+            do_predict=True,
+            save_total_limit=2,
+            save_strategy="epoch",
+            evaluation_strategy="epoch",
+            metric_for_best_model="loss",
+            overwrite_output_dir=True,
+            greater_is_better=False,
+            do_eval=True,
+            logging_steps=2
+        ) # Training_args
 
-    # Training Arguments
-    training_args = TrainingArguments(
-        output_dir="./checkpoints",
-        use_mps_device=False,
-        num_train_epochs=1,
-        per_device_train_batch_size=16,
-        per_device_eval_batch_size=16,
-        weight_decay=1e-2,
-        logging_dir="./save_model/logs",
-        load_best_model_at_end=True,
-        learning_rate=5e-6,
-        do_predict=True,
-        save_total_limit=2,
-        save_strategy="epoch",
-        evaluation_strategy="epoch",
-        metric_for_best_model="loss",
-        overwrite_output_dir=True,
-        greater_is_better=False,
-        do_eval=True,
-    )
+        trainer = Trainer(
+            model=model,
+            args=training_args,
+            train_dataset=tokenized_datasets["train"],
+            eval_dataset=tokenized_datasets["test"],
+            data_collator=data_collator,
+            tokenizer=tokenizer,
+            compute_metrics=compute_metrics
+        ) # Trainer setup
+        
+        
+        ### Training  model
+        trainer.train()
+        print(trainer.model)
 
-    # Trainer setup
-    trainer = Trainer(
-        model=model,
-        args=training_args,
-        train_dataset=tokenized_datasets["train"],
-        eval_dataset=tokenized_datasets["test"],
-        data_collator=data_collator,
-        tokenizer=tokenizer,
-        compute_metrics=compute_metrics
-    )
-    trainer.train()
-    trainer.save_model("./runs/best_model")
+        ### Get model signature ready
+        classification_pipeline = pipeline(model=OUTPUT_MODEL_DIR, task='text-classification')
+        input_example = ["Facebook is a huge platform"]
+        output = classification_pipeline(input_example)
 
- 
+        ### Model signature
+        signature = mlflow.models.infer_signature(input_example, output)
 
-    # On donne un nom à l'expérience
-    #experiment =  
-    mlflow.set_experiment(experiment_name="bou")
-    #experiment_id = mlflow.create_experiment(name="test")
-    # On commence l'experience
-    # On se connecte à l'interface UI et la base de donnée
-    #mlflow.set_tracking_uri("http://localhost:5000")
-    mlflow.set_tracking_uri("sqlite:///mlflow.db") 
-    with mlflow.start_run(run_name="Logging params"):#,experiment_id=experiment.experiment_id) as runs:
-        parameters = { "output_dir":"./checkpoints",
-                "use_mps_device":False,
-                "num_train_epochs":1,
-                "per_device_train_batch_size":16,
-                "per_device_eval_batch_size":16,
-                "weight_decay":1e-2,
-                "logging_dir":"./save_model/logs",
-                "load_best_model_at_end":True,
-                "learning_rate":5e-6,
-                "do_predict":True,
-                "save_total_limit":2,
-                "save_strategy":"epoch",
-                "evaluation_strategy":"epoch",
-                "metric_for_best_model":"loss",
-                "overwrite_output_dir":True,
-                "greater_is_better":False,
-                "do_eval":True
-                }
-        # Log the model
-        #mlflow.pytorch.log_model(model,"model")
-
-        # Log a single metric 
-        mlflow.log_params(parameters)
-        mlflow.log_artifacts(local_dir="./runs/best_model",artifact_path="model") 
+        ### Save model pipeline for inference
+        model_info = mlflow.transformers.log_model(
+            transformers_model=classification_pipeline,
+            artifact_path="text-classifier",
+            task="text-classification",
+            signature=signature,
+            input_example=input_example,
+        )
