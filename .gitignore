@@ -13,3 +13,4 @@ mlruns/
 d/
 mlflow.db
 .env.newsclassifier/
+.gitignore
