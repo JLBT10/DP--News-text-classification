@@ -14,7 +14,7 @@ WORKDIR /src
 
 # Copy files into the container
 COPY requirements.txt /src/requirements.txt
-COPY ./app /src/app
+COPY . /src/app
 
 # Install Python dependencies
 RUN pip3 install --upgrade pip \
