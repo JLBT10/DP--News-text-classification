@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.16.2 # Pre-built MLflow image
+    ports:
+      - "5001:5000"  # Expose port 5000 in the container to 5001 on the host
+    volumes:
+      - ./mlruns:/mlflow  # Mount local folder for MLflow artifacts
+    environment:
+      #- MLFLOW_TRACKING_URI=sqlite:///mlflow/mlflow.db  # Using SQLite as backend for tracking
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=/mlflow/artifacts  # Path for artifact storage
+    command:
+      mlflow server --backend-store-uri sqlite:///mlflow/mlflow.db --host 0.0.0.0 --port 5000
+      #- /mlflow
+  trainings:
+    build:
+      context: ./docker  # Your Python code directory
+      dockerfile: train.Dockerfile  # Dockerfile to run your Python code
+    volumes:
+      - ./:/work  # Mount current directory for code and data
+      - ./mlruns:/mlflow
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000  # Set MLflow server location
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}  # AWS credentials, if needed
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+    depends_on:
+      - mlflow  # Ensure mlflow starts first

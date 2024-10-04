@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.16.2 # Pre-built MLflow image
+    ports:
+      - "5001:5000"  # Expose port 5000 in the container to 5001 on the host
+    volumes:
+      - ./mlruns:/mlflow  # Mount local folder for MLflow artifacts
+    environment:
+      #- MLFLOW_TRACKING_URI=sqlite:///mlflow/mlflow.db  # Using SQLite as backend for tracking
+      - MLFLOW_DEFAULT_ARTIFACT_ROOT=/mlflow/artifacts  # Path for artifact storage
+    command:
+      mlflow server --backend-store-uri sqlite:///mlflow/mlflow.db --host 0.0.0.0 --port 5000
+
+  server:
+    build:
+     context: ./app
+     dockerfile: server.Dockerfile
+    image: server-app
+    volumes:
+    - ./:/src
+    - ./mlruns:/src/mlflow
+    ports:
+    - 80:8000
