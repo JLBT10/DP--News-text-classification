@@ -3,7 +3,7 @@
 
 #Dataset
 # Download data from kaggle with kaggle API
-kaggle datasets download -d kishanyadav/inshort-news
+```kaggle datasets download -d kishanyadav/inshort-news```
 
 # Unzip it in data directory
 unzip inshort-news.zip
