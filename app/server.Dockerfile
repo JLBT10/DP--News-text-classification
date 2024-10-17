@@ -13,23 +13,17 @@ RUN apt-get update \
 WORKDIR /src
 
 # Copy files into the container
-COPY requirements.txt /src/requirements.txt
+COPY requirements.txt requirements.txt
 COPY . /src/app
 
 # Install Python dependencies
 RUN pip3 install --upgrade pip \
     && pip3 install -r requirements.txt \
     && pip3 install uvicorn[standard]
-RUN pip3 install datasets==3.0.0
-RUN pip install --upgrade datasets
-RUN pip install awscli --break-system-packages \
-    && pip install dvc-s3 --break-system-packages 
-   # && aws s3 cp s3://your-bucket/path/to/model.tar.gz ./model.tar.gz
-
 
 # Expose the port that Uvicorn will run on
 EXPOSE 8000
 
 # Command to run the application using Uvicorn
-CMD ["uvicorn", "app.server:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000" , "--reload"]
 #uvicorn app.server:app --host 0.0.0.0 --port 8000

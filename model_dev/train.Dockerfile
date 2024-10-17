@@ -26,4 +26,4 @@ ENV PATH="/src/venv/bin:$PATH"
 ENV GIT_PYTHON_REFRESH=quiet
 
 # Default command to run the training script
-CMD ["python3","model_dev/eval.py"]
+CMD ["python3","model_dev/train.py"]

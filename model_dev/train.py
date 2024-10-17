@@ -106,7 +106,7 @@ if __name__ == '__main__':
 
         os.makedirs(OUTPUT_MODEL_DIR, exist_ok=True)
         trainer.save_model(OUTPUT_MODEL_DIR)
-        mlflow.log_artifact(OUTPUT_MODEL_DIR,"M")
+
         ### Get model signature ready
         classification_pipeline = pipeline(model=OUTPUT_MODEL_DIR, task='text-classification')
         input_example = ["Facebook is a huge platform"]

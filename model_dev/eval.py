@@ -15,9 +15,7 @@ model = AutoModelForSequenceClassification.from_pretrained(model_name, num_label
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 # Load the dataset from disk and shuffle it
-dataset = load_from_disk("./model_dev/data/inshort_dataset").shuffle(seed=42).select(range(10))
-print(dataset)
-
+dataset = load_from_disk("./model_dev/data/inshort_dataset").shuffle(seed=42).select(range(2))
 
 ### Processing Labels
 labels = dataset.unique("labels") # Get a list of unique labels

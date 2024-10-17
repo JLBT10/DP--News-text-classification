@@ -5,3 +5,7 @@ model_dev/runs/
 model_dev/mlruns/
 model_dev/model_dev_req
 .env.newsclassifier/
+../.DS_Store
+.DS_Store
+../app/.DS_Store
+data/.DS_Store
