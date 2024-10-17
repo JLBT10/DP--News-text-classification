@@ -2,7 +2,6 @@ import pandas as pd
 from datasets import Dataset
 import os
 import glob
-
 import pandas as pd
 import glob
 import os
@@ -68,6 +67,23 @@ def stratified_split_train_test(dataset):
     dataset = dataset.train_test_split(test_size=0.3,shuffle=True, stratify_by_column="labels")
     return dataset
 
-if __name__ == "__main__" :
-    inshort_data = create_inshort_dataset("./data")
-    print(inshort_data)
+
+"""def load_with_dvc(dataset_path, repo):
+    # Open the dataset file using dvc.api.open
+    with dvc.api.open(dataset_path , repo=repo) as f:
+        # Read the header first   
+        columns = f.readline().strip().split('|')
+        dataset = pd.DataFrame(columns=columns)
+
+        # Process each remaining line in the file
+        for idx, line in enumerate(f):
+            line_process = line.strip().split('|')
+            if len(columns) == len(line_process):
+                dataset.loc[idx] = line_process
+            else:
+                print(f"Line {idx} has mismatched columns: {line_process}")
+
+    return dataset
+#if __name__ == "__main__" :
+    #inshort_data = create_inshort_dataset("./data")
+    #print(inshort_data)"""

@@ -1,38 +1,15 @@
 # Implementing an API to test the news classification model
-from transformers import pipeline
 import uvicorn
 from fastapi import FastAPI
 import gradio as gr
 import mlflow
+from inference import predict
 # Initialize FastAPI app
 app = FastAPI()
 
-def predict(prompt, path_to_model="/src/runs/best_model"):
-    """
-    Function to make predictions using the loaded model
-    """
-    # Create a text classification pipeline using the specified model
-    
-    run_id = "024e1d8189eb4c5abe4bc5107897b3f3"
-    model_uri = f"run:/{run_id}/model"
-    model = mlflow.pytorch. load_model(model_uri)
-    pipe = pipeline("text-classification", model=path_to_model)
-    # Make a prediction
-    output = pipe(prompt)
-    
-    # Convert the score to a percentage and round to 2 decimal places
-    output[0]["score"] = f"{round(output[0]['score'] * 100, 2)}%"
-    
-    # Return the prediction result
-    return {"answer": output[0]}
-
-def make_prediction(prompt):
-    """ Wrapper function to make the prediction """
-    return predict(prompt)
-
 # Set up the Gradio interface
 iface = gr.Interface(
-    fn=make_prediction,
+    fn=predict,
     inputs=gr.Textbox(label="Enter News Prompt"),
     outputs=gr.Textbox(label="Predicted Category"),
     title="News Category Classifier",
