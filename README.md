@@ -19,7 +19,7 @@ source activate pytorch
 
 Launch docker compose for building of the mflow and training dockerfile 
 ```
-cd NewsClassifier-BERT
+cd NewsClassifier-BERT/model_dev
 docker compose -f docker-compose-train.yaml up --build 
 ```
 
@@ -27,7 +27,7 @@ docker compose -f docker-compose-train.yaml up --build
 
 To launch mlflow container server and the app sever : 
 ```
-cd NewsClassifier-BERT
+cd NewsClassifier-BERT/app
 docker compose -f docker-compose-app.yaml up --build 
 ```
 
