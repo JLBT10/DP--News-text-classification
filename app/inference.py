@@ -7,8 +7,8 @@ def predict(prompt):
     """
     # Create a text classification pipeline using the specified model
     
-    RUN_ID = "53ab23287a0b4a7090b645a93e44c4f7"
-    model_path = f'/mlflow/artifacts/2/{RUN_ID}/artifacts/text-classifier'
+    RUN_ID = "b11f5c9401304a718ba2a6462ef5a7d7"
+    model_path = f'/mlflow/artifacts/1/{RUN_ID}/artifacts/text-classifier'
     model = mlflow.pyfunc.load_model(model_path)
     output = model.predict(prompt)
     

@@ -17,11 +17,10 @@ COPY requirements.txt requirements.txt
 COPY . /src/app
 
 # Install Python dependencies
-RUN pip3 install --upgrade pip \
-    && pip3 install -r requirements.txt \
-    && pip3 install uvicorn[standard]
+RUN pip install --upgrade pip \
+    && pip install -r requirements.txt
 
-# Expose the port that Uvicorn will run on
+# Exposee the port that Uvicorn will run on
 EXPOSE 8000
 
 # Command to run the application using Uvicorn
