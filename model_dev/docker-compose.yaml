@@ -24,6 +24,7 @@ services:
       - ./mlruns:/mlruns #Allows to get all the result inside the trainings container
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow:5000  # Set MLflow server location
-
+    
     depends_on:
       - mlflow  # Ensure mlflow starts first
+    runtime: nvidia

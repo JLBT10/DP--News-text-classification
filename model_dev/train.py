@@ -30,7 +30,7 @@ if __name__ == '__main__':
 
     
     ### Reducing the number of rows to process data faster for testing
-    inshort_data = select_n_rows(inshort_data,100)
+    #inshort_data = select_n_rows(inshort_data,100)
 
     ### Processing Labels
     labels = inshort_data.unique("labels") # Get a list of unique labels
@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
 
     ### Loading the model
-    model = AutoModelForSequenceClassification.from_pretrained(CHECKPOINT, num_labels=4,
+    model = AutoModelForSequenceClassification.from_pretrained(CHECKPOINT, num_labels=7,
     label2id=label2id, id2label=id2label)
     
     ### Let's define the data collator for classification tasks
@@ -72,9 +72,9 @@ if __name__ == '__main__':
         training_args = TrainingArguments(
             output_dir="./model_dev/checkpoints",
             use_mps_device=False,
-            num_train_epochs=3,
-            per_device_train_batch_size=16,
-            per_device_eval_batch_size=16,
+            num_train_epochs=6,
+            per_device_train_batch_size=96,
+            per_device_eval_batch_size=96,
             weight_decay=1e-2,
             logging_dir="./model_dev/logs",
             load_best_model_at_end=True,
