@@ -18,31 +18,32 @@ def create_inshort_dataset(path):
 
     # Creating the input for our model
     inshort_dataset["text"] = inshort_dataset["news_headline"] + " " + inshort_dataset["news_article"]
-
+   
     # Define the columns to clean
     columns_to_clean = ["news_headline", "news_article", "text", "labels"]
 
     # Clean the specified columns
-    for column in columns_to_clean:
-        if column in inshort_dataset.columns:
-            inshort_dataset[column] = (
-                inshort_dataset[column]
-                .str.strip()  # Remove leading and trailing spaces
-                .str.replace(r'\s+', ' ', regex=True)  # Replace multiple spaces with a single space
-            )
+   # for column in columns_to_clean:
+   #     if column in inshort_dataset.columns:
+     #       inshort_dataset[column] = (
+       #         inshort_dataset[column]
+       #         .str.strip()  # Remove leading and trailing spaces
+         #       .str.replace(r'\s+', ' ', regex=True)  # Replace multiple spaces with a single space
+           # )
 
     # Rename the target column
-    inshort_dataset = inshort_dataset.rename(columns={'news_category': 'labels'})
+    #inshort_dataset = inshort_dataset.rename(columns={'news_category': 'labels'})
 
     # Drop the 'Unnamed: 0' column if it exists
     if "Unnamed: 0" in inshort_dataset.columns:
         inshort_dataset = inshort_dataset.drop(["Unnamed: 0"], axis=1)
 
+    inshort_dataset.to_csv("./../data/inshort.csv", index=False, sep='|')
     # Replace newline characters with spaces
     #inshort_dataset = inshort_dataset.replace(r'\n', ' ', regex=True)
 
     # Save the cleaned dataset to a CSV file
-    inshort_dataset.to_csv("./data/inshort.csv", index=False, sep='|')
+    #inshort_dataset.to_csv("./../data/inshort.csv", index=False, sep='|')
 
 
     ####
@@ -84,6 +85,7 @@ def stratified_split_train_test(dataset):
                 print(f"Line {idx} has mismatched columns: {line_process}")
 
     return dataset
-#if __name__ == "__main__" :
-    #inshort_data = create_inshort_dataset("./data")
-    #print(inshort_data)"""
+  """
+if __name__ == "__main__" :
+    inshort_data = create_inshort_dataset("/Users/jlbt/boa_workspace/Text news classification/data")
+    #print(inshort_data)

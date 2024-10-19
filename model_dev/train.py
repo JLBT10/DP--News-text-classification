@@ -70,13 +70,13 @@ if __name__ == '__main__':
     with mlflow.start_run() as run :
     ### Preparation for trainings
         training_args = TrainingArguments(
-            output_dir="./checkpoints",
+            output_dir="./model_dev/checkpoints",
             use_mps_device=False,
-            num_train_epochs=1,
+            num_train_epochs=3,
             per_device_train_batch_size=16,
             per_device_eval_batch_size=16,
             weight_decay=1e-2,
-            logging_dir="./save_model/logs",
+            logging_dir="./model_dev/logs",
             load_best_model_at_end=True,
             learning_rate=5e-6,
             do_predict=True,
@@ -84,10 +84,9 @@ if __name__ == '__main__':
             save_strategy="epoch",
             eval_strategy="epoch",
             metric_for_best_model="loss",
-            overwrite_output_dir=True,
             greater_is_better=False,
             do_eval=True,
-            logging_steps=2
+            save_steps=2,
         ) # Training_args
 
         trainer = Trainer(

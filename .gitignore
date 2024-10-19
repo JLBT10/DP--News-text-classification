@@ -9,3 +9,5 @@ model_dev/model_dev_req
 .DS_Store
 ../app/.DS_Store
 data/.DS_Store
+data_analysis
+.gitignore
