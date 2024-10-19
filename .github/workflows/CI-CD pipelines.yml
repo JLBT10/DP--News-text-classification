@@ -21,11 +21,11 @@ jobs:
       - name: Install dependencies
         run: |
           pip install pylint
-          pip install -r requirements.txt
+          pip install -r ./model_dev/requirements.txt
          
       # Action 4: Run pylint
       - name: Run pylint
-        run: pylint train.py
+        run: pylint model_dev/train.py
 
  # building-app-dockerfile:
   #  runs-on: ubuntu-latest
