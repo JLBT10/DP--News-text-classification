@@ -3,30 +3,30 @@ on:
   push
   
 jobs:
-  """Checking-code-quality:
-    runs-on: ubuntu-latest
-    steps:
+  #Checking-code-quality:
+    #runs-on: ubuntu-latest
+    #steps:
     
       # Action 1: Pull the code from GitHub
-      - name: Checkout code
-        uses: actions/checkout@v3
+      #- name: Checkout code
+        #uses: actions/checkout@v3
        
       # Action 2: Installation of Python and pip
-      - name: Install Python and pip
-        uses: actions/setup-python@v3
-        with:
-          python-version: '3.12.6'  # Use quotes around the version
+      #- name: Install Python and pip
+        #uses: actions/setup-python@v3
+        #with:
+          #python-version: '3.12.6'  # Use quotes around the version
          
       # Action 3: Installation of dependencies
-      - name: Install dependencies
-        run: |
-          pip install pylint
-          pip install -r ./model_dev/requirements.txt
+      #- name: Install dependencies
+        #run: |
+          #pip install pylint
+          #pip install -r ./model_dev/requirements.txt
          
       # Action 4: Run pylint
-      - name: Run pylint
-        run: pylint model_dev/train.py
-    """
+      #- name: Run pylint
+        #run: pylint model_dev/train.py
+    
   launch-training:
     runs-on: self-hosted
     steps:
