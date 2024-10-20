@@ -22,7 +22,3 @@ RUN pip install --upgrade pip \
 
 # Exposee the port that Uvicorn will run on
 EXPOSE 8000
-
-# Command to run the application using Uvicorn
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8000" , "--reload"]
-#uvicorn app.server:app --host 0.0.0.0 --port 8000

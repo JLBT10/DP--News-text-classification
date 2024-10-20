@@ -21,16 +21,16 @@ from utils.map_functions import *
 
 if __name__ == '__main__':
     ### Defining constant
-    DATASET_PATH = './model_dev/data/inshort_dataset' #Dataset path on github
+    DATASET_PATH = './data/inshort_dataset' #Dataset path on github
     CHECKPOINT = "bert-base-cased" # Name of the model
-    OUTPUT_MODEL_DIR = "./model_dev/runs/best_model"
+    OUTPUT_MODEL_DIR = "./runs/best_model"
 
     ### Loading data
     inshort_data = load_from_disk(DATASET_PATH)
 
     
     ### Reducing the number of rows to process data faster for testing
-    #inshort_data = select_n_rows(inshort_data,100)
+    inshort_data = select_n_rows(inshort_data,100)
 
     ### Processing Labels
     labels = inshort_data.unique("labels") # Get a list of unique labels
@@ -57,7 +57,7 @@ if __name__ == '__main__':
 
 
     ### Loading the model
-    model = AutoModelForSequenceClassification.from_pretrained(CHECKPOINT, num_labels=7,
+    model = AutoModelForSequenceClassification.from_pretrained(CHECKPOINT, num_labels=4,
     label2id=label2id, id2label=id2label)
     
     ### Let's define the data collator for classification tasks
@@ -65,18 +65,18 @@ if __name__ == '__main__':
 
     ### Tracking of experiment
     mlflow.set_experiment(experiment_name="NewsClassifer") # Name of the experience
-    mlflow.set_tracking_uri("sqlite:///model_dev/mlruns/mlflow.db") # Where to save the result
+    mlflow.set_tracking_uri("sqlite:////mlruns/mlflow.db") # Where to save the result
 
     with mlflow.start_run() as run :
     ### Preparation for trainings
         training_args = TrainingArguments(
-            output_dir="./model_dev/checkpoints",
+            output_dir="./checkpoints",
             use_mps_device=False,
-            num_train_epochs=6,
+            num_train_epochs=1,
             per_device_train_batch_size=96,
             per_device_eval_batch_size=96,
             weight_decay=1e-2,
-            logging_dir="./model_dev/logs",
+            logging_dir="./logs",
             load_best_model_at_end=True,
             learning_rate=5e-6,
             do_predict=True,
