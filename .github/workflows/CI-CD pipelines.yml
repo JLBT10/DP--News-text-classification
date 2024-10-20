@@ -47,8 +47,10 @@ jobs:
 
       - name: Push Docker image to Docker Hub
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/model_dev:trainings
-          docker push ${{ secrets.DOCKER_USERNAME }}/model_dev:mlflow
+          docker tag model_dev_trainings:latest ${{ secrets.DOCKER_USERNAME }}/model_dev_trainings:latest
+
+          docker push ${{ secrets.DOCKER_USERNAME }}/model_dev_trainings:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/model_dev_mlflow:latest
 
 
  # building-app-dockerfile:
