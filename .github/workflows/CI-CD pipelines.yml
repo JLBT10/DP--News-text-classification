@@ -43,7 +43,7 @@ jobs:
       - name: run docker compose
         run: |
           cd model_dev
-          docker compose up --build 
+          docker compose up --build -d
 
       - name: Push Docker image to Docker Hub
         run: |
