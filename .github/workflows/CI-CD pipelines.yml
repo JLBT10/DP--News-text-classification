@@ -60,7 +60,7 @@ jobs:
 
    # - name: building and launching app 
    #   run:
-    #    docker build -f api.Dockerfile -t app_docke .
+    #    docker build -f api.Dockerfile -t app_docker .
     #    docker run -it app_docker
         
      
