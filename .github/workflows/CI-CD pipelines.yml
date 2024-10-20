@@ -45,7 +45,7 @@ jobs:
           cd model_dev
           docker compose up --build -d
 
-      - name: Push Docker image to Docker Hub
+      - name: Push Docker image to Docker Hu
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/mlflow-training:latest
 
