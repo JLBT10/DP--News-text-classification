@@ -48,9 +48,10 @@ jobs:
       - name: Push Docker image to Docker Hub
         run: |
           docker tag model_dev-trainings:latest ${{ secrets.DOCKER_USERNAME }}/model_dev-trainings:latest
-          docker tag model_dev-mlflow:latest ${{ secrets.DOCKER_USERNAME }}/model_dev-mlflow:latest
+         # docker tag ghcr.io/mlflow/mlflow :latest ${{ secrets.DOCKER_USERNAME }}/model_dev-mlflow:latest
+         # ghcr.io/mlflow/mlflow                 v2.16.2 
           docker push ${{ secrets.DOCKER_USERNAME }}/model_dev-trainings:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/model_dev-mlflow:latest
+         # docker push ${{ secrets.DOCKER_USERNAME }}/model_dev-mlflow:latest
 
  # building-app-dockerfile:
   #  runs-on: ubuntu-lateest
