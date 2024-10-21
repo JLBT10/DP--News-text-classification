@@ -16,9 +16,7 @@ services:
 
   #Train the model
   trainings:
-    build: 
-      context: .  # Your Python code directory
-      dockerfile: train.Dockerfile  # Dockerfile to run your Python code
+    image: jeanluc073/model_dev-trainings
     volumes:
      #- ./:/src/model_dev  # Mount current directory for code and data
       - ./mlruns:/mlruns #Allows to get all the result inside the trainings container
