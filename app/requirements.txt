@@ -46,9 +46,9 @@ markdown-it-py==3.0.0
 MarkupSafe==2.1.5
 matplotlib==3.9.2
 mdurl==0.1.2
-mlflow==2.17.0
+mlflow==2.16.2
 mlflow-skinny==2.17.0
-numpy==2.1.2
+numpy==2.1.1
 opentelemetry-api==1.27.0
 opentelemetry-sdk==1.27.0
 opentelemetry-semantic-conventions==0.48b0
@@ -89,7 +89,7 @@ threadpoolctl==3.5.0
 tokenizers==0.20.1
 tomlkit==0.12.0
 tqdm==4.66.5
-transformers==4.45.2
+transformers==4.45.1
 typer==0.12.5
 typing_extensions==4.12.2
 tzdata==2024.2
@@ -99,4 +99,4 @@ websockets==12.0
 Werkzeug==3.0.4
 wrapt==1.16.0
 zipp==3.20.2
-torch
+torch==2.4.1
