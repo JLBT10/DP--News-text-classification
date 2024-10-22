@@ -23,7 +23,7 @@ if __name__ == '__main__':
     ### Defining constant
     DATASET_PATH = './data/inshort_dataset' #Dataset path on github
     CHECKPOINT = "bert-base-cased" # Name of the model
-    OUTPUT_MODEL_DIR = "./runs/best_model"
+    
 
     ### Loading data
     inshort_data = load_from_disk(DATASET_PATH)
@@ -65,9 +65,11 @@ if __name__ == '__main__':
 
     ### Tracking of experiment
     mlflow.set_experiment(experiment_name="NewsClassifer") # Name of the experience
-    mlflow.set_tracking_uri("sqlite:////mlruns/mlflow.db") # Where to save the result
+    mlflow.set_tracking_uri("sqlite:///mlruns/mlflow.db") # Where to save the result
 
     with mlflow.start_run() as run :
+
+        OUTPUT_MODEL_DIR= f'runs:/{run.info.run_id}/text-classifier'
     ### Preparation for trainings
         training_args = TrainingArguments(
             output_dir="./checkpoints",
@@ -103,12 +105,9 @@ if __name__ == '__main__':
         ### Training  model
         trainer.train()
 
-        os.makedirs(OUTPUT_MODEL_DIR, exist_ok=True)
-        trainer.save_model(OUTPUT_MODEL_DIR)
-
         ### Get model signature ready
         classification_pipeline = pipeline(model=OUTPUT_MODEL_DIR, task='text-classification')
-        input_example = ["Facebook is a huge platform"]
+        input_example = ["Trump has promised to protect Social Security. His proposals could lead to benefit cuts in 6 years"]
         output = classification_pipeline(input_example)
 
         ### Model signature

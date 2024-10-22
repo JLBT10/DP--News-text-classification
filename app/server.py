@@ -26,7 +26,7 @@ app = gr.mount_gradio_app(app, iface, path="/predict")
 
 if __name__ == "__main__":
     # Run the FastAPI app using Uvicorn
-    uvicorn.run(app="api:app", host="0.0.0.0", port=8000)
+    uvicorn.run(app="server:app", host="0.0.0.0", port=8000)
     
     # Alternative way to run the app using environment variables
     # uvicorn.run(app="api:app", host=os.getenv("UVICORN_HOST"), port=int(os.getenv("UVICORN_PORT")))

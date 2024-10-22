@@ -16,21 +16,6 @@ def compute_metrics(eval_preds):
     accuracy = accuracy_score(labels, predictions)
     precision, recall, f1, _ = precision_recall_fscore_support(labels, predictions, average='weighted')
     
-    conf_matrix = confusion_matrix(labels,predictions)
-    # Plot confusion matrix
-    plt.figure(figsize=(10, 7))
-    sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=np.unique(labels), yticklabels=np.unique(labels))
-    plt.title("Confusion Matrix")
-    plt.ylabel('True label')
-    plt.xlabel('Predicted label')
-    
-    # Save confusion matrix as an image
-    os.makedirs("./model_dev/artifacts", exist_ok=True)
-    confusion_matrix_path = os.path.join("./model_dev/artifacts", "confusion_matrix.png")
-    plt.savefig(confusion_matrix_path)
-    plt.close()
-    # Afficher la matrice de confusion
-    #plt.show()
     return {
         'accuracy': accuracy,
         'precision': precision,

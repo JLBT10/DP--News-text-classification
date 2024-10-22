@@ -1,7 +1,8 @@
 name: CI-CD Pipeline
+
 on:
   push
-  
+
 jobs:
   #Checking-code-quality:
     #runs-on: ubuntu-latest
@@ -28,27 +29,53 @@ jobs:
         #run: pylint model_dev/train.py
     
   launch-training:
-    runs-on: self-hosted
+    runs-on: self-hosted  # Or use 'ubuntu-latest' if you're not using a self-hosted runner
     steps:
 
-      - name: checkout code 
+      # Step 1: Checkout code
+      - name: Checkout code
         uses: actions/checkout@v3
 
+      # Step 2: Log in to Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}  # Store Docker Hub username in GitHub secrets
-          password: ${{ secrets.DOCKER_PASSWORD }}  # Store Docker Hub password in GitHub secrets
+          username: ${{ secrets.DOCKER_USERNAME }}  # Docker Hub username from GitHub Secrets
+          password: ${{ secrets.DOCKER_PASSWORD }}  # Docker Hub password from GitHub Secrets
 
-      - name: run docker compose
+      # Step 3: Build Docker image for training
+      - name: Build Docker image for training
         run: |
-          cd model_dev
-          docker compose up --build -d
+          docker build -t model_trainings .
+        
+      # Step 4: Run the training container and mount volumes
+      - name: Run training and generate artifacts
+        run: |
+          docker run -v ./mlruns:/src/model_dev/mlruns model_trainings python3 train.py
+          docker commit $(docker ps -alq) model_trained  # Commit the container to save the trained model
 
-      - name: Push Docker image to Docker Hub
+      # Step 5: Build Docker image for the app
+      - name: Build Docker image for app
         run: |
-          docker tag model_dev-trainings:latest ${{ secrets.DOCKER_USERNAME }}/model_dev-trainings:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/model_dev-trainings:latest
+          docker build -t app .
+
+      # Step 6: Run the app (optional step for testing locally)
+      - name: Run the app container (optional)
+        run: |
+          docker run -v ./mlruns:/mlruns app
+
+      # Step 7: Commit app container as a new image
+      - name: Commit app container
+        run: |
+          docker commit $(docker ps -alq) model-app
+
+      # Step 8: Push Docker images to Docker Hub
+      - name: Push Docker images to Docker Hub
+        run: |
+          docker tag model_trained:latest ${{ secrets.DOCKER_USERNAME }}/model_trained:latest
+          docker tag model-app:latest ${{ secrets.DOCKER_USERNAME }}/model-app:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/model_trained:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/model-app:latest
 
 
  # building-app-dockerfile:
