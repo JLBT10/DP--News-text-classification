@@ -52,25 +52,21 @@ jobs:
         run: |
           docker build -t model_dev_1 .
         
-      # Step 4: Run the training container and mount volumes
+      # Step 4: Build tag and push the Docker image for the app
       - name: Run training and generate artifacts
         run: |
           docker run -it --gpus all -p 5000:5000 -v "$(pwd)/mlruns:/src/model_dev/mlruns" model_dev_1 sh run.sh
           docker commit $(docker ps -alq) model_dev_1  # Commit the container to save the trained model
+          docker tag model_dev:latest ${{ secrets.DOCKER_USERNAME }}/model_dev_1:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/model_dev_1:latest
 
-      # Step 5: Build Docker image for the app
+      # Step 5: Build tag and push the Docker image for the app
       - name: Build Docker image for app
         working-directory: ./app  # Override working directory
         run: |
           docker build -t app .
           docker commit $(docker ps -alq) model-app-1
-
-      # Step 6: Push Docker images to Docker Hub
-      - name: Push Docker images to Docker Hub
-        run: |
-          docker tag model_dev:latest ${{ secrets.DOCKER_USERNAME }}/model_dev_1:latest
           docker tag model-app-1:latest ${{ secrets.DOCKER_USERNAME }}/model-app-1:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/model_dev_1:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/model-app-1:latest
 
 
