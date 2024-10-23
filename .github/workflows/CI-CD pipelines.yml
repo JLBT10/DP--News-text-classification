@@ -30,6 +30,10 @@ jobs:
     
   launch-training:
     runs-on: self-hosted  # Or use 'ubuntu-latest' if you're not using a self-hosted runner
+    defaults:
+     run:
+      working-directory: ./model_dev
+
     steps:
 
       # Step 1: Checkout code
@@ -56,6 +60,7 @@ jobs:
 
       # Step 5: Build Docker image for the app
       - name: Build Docker image for app
+        working-directory: ./app  # Override working directory
         run: |
           docker build -t app .
           docker commit $(docker ps -alq) model-app-1
