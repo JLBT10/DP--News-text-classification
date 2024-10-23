@@ -52,7 +52,7 @@ jobs:
         run: |
           docker build -t model_dev_1 .
         
-      # Step 4: Build tag and push the Docker image for the app
+      # Step 4: Build tag and push the Docker image for the model
       - name: Run training and generate artifacts
         run: |
           docker run --gpus all -p 5000:5000 -v "$(pwd)/mlruns:/src/model_dev/mlruns" model_dev_1 sh run.sh
