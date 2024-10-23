@@ -10,4 +10,5 @@ model_dev/model_dev_req
 ../app/.DS_Store
 data/.DS_Store
 data_analysis
+app/mlruns
 .gitignore

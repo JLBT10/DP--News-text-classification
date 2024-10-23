@@ -104,20 +104,18 @@ if __name__ == '__main__':
         
         ### Training  model
         trainer.train()
+        classification_pipeline = pipeline("text-classification", model=trainer.model, tokenizer=tokenizer)
+        # Exemple d'entrée pour la signature
+        input_example = ["This is a great movie!"]
+        output_example = classification_pipeline(input_example)
 
-        ### Get model signature ready
-        classification_pipeline = pipeline(model=OUTPUT_MODEL_DIR, task='text-classification')
-        input_example = ["Trump has promised to protect Social Security. His proposals could lead to benefit cuts in 6 years"]
-        output = classification_pipeline(input_example)
-
-        ### Model signature
-        signature = mlflow.models.infer_signature(input_example, output)
-
+        # Inférer la signature du modèle
+        signature = infer_signature(input_example, output_example)
         ### Save model pipeline for inference
         model_info = mlflow.transformers.log_model(
             transformers_model=classification_pipeline,
             artifact_path="text-classifier",
-            task="text-classification",
+            task="text-classification"
             signature=signature,
-            input_example=input_example,
-        )
+           input_example=input_example
+    )

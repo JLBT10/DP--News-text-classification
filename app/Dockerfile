@@ -20,7 +20,3 @@ COPY . .
 
 # Exposee the port that Uvicorn will run on
 EXPOSE 8000
-
-ENV MLFLOW_TRACKING_URI=sqlite:///mlruns/mlflow.db
-ENV MLFLOW_DEFAULT_ARTIFACT_ROOT=/mlruns
-

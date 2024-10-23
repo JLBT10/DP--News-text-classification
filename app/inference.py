@@ -6,7 +6,7 @@ def predict(prompt):
     Function to make predictions using the loaded model
     """
     # Create a text classification pipeline using the specified model
-    RUN_ID = "b11f5c9401304a718ba2a6462ef5a7d7"
+    RUN_ID = "a1b84b847fb445c8aa9fc021fb4a8581"
     MODEL_PATH = f'./mlruns/1/{RUN_ID}/artifacts/text-classifier'
     model = mlflow.pyfunc.load_model(MODEL_PATH)
     output = model.predict(prompt)

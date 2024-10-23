@@ -25,5 +25,11 @@ RUN python3 -m venv venv \
 
 # Set the PATH environment variable to include the virtual environment's bin directory
 
-ENV MLFLOW_TRACKING_URI=sqlite:///mlruns/mlflow.db
-ENV MLFLOW_DEFAULT_ARTIFACT_ROOT=/mlruns
+# Create the artifacts directory for MLflow if it doesn't exist
+RUN mkdir -p /src/model_dev/mlruns/artifacts
+
+ENV MLFLOW_TRACKING_URI=sqlite:////src/model_dev/mlruns/mlflow.db
+ENV MLFLOW_DEFAULT_ARTIFACT_ROOT=/src/model_dev/mlruns/artifacts
+
+EXPOSE 5000
+
