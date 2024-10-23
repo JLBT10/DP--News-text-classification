@@ -11,6 +11,7 @@ from transformers import (
     TrainingArguments,
     Trainer, pipeline
 )
+from mlflow.models import infer_signature
 from datasets import ClassLabel, load_from_disk
 
 # Project-Specific imports
@@ -27,10 +28,6 @@ if __name__ == '__main__':
 
     ### Loading data
     inshort_data = load_from_disk(DATASET_PATH)
-
-    
-    ### Reducing the number of rows to process data faster for testing
-    inshort_data = select_n_rows(inshort_data,100)
 
     ### Processing Labels
     labels = inshort_data.unique("labels") # Get a list of unique labels
@@ -57,7 +54,7 @@ if __name__ == '__main__':
 
 
     ### Loading the model
-    model = AutoModelForSequenceClassification.from_pretrained(CHECKPOINT, num_labels=4,
+    model = AutoModelForSequenceClassification.from_pretrained(CHECKPOINT, num_labels=7,
     label2id=label2id, id2label=id2label)
     
     ### Let's define the data collator for classification tasks
@@ -73,12 +70,10 @@ if __name__ == '__main__':
     ### Preparation for trainings
         training_args = TrainingArguments(
             output_dir="./checkpoints",
-            use_mps_device=False,
-            num_train_epochs=1,
+            num_train_epochs=6,
             per_device_train_batch_size=96,
             per_device_eval_batch_size=96,
             weight_decay=1e-2,
-            logging_dir="./logs",
             load_best_model_at_end=True,
             learning_rate=5e-6,
             do_predict=True,
@@ -87,8 +82,7 @@ if __name__ == '__main__':
             eval_strategy="epoch",
             metric_for_best_model="loss",
             greater_is_better=False,
-            do_eval=True,
-            save_steps=2,
+            do_eval=True
         ) # Training_args
 
         trainer = Trainer(
@@ -115,7 +109,7 @@ if __name__ == '__main__':
         model_info = mlflow.transformers.log_model(
             transformers_model=classification_pipeline,
             artifact_path="text-classifier",
-            task="text-classification"
+            task="text-classification",
             signature=signature,
            input_example=input_example
     )
