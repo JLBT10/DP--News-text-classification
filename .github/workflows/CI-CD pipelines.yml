@@ -63,7 +63,7 @@ jobs:
 
       # Step 5: Build tag and push the Docker image for the app
       - name: Build Docker image for app
-        working-directory: ./../app  # Override working directory
+        working-directory: /home/ubuntu/actions-runner/_work/NewsClassifier-BERT/NewsClassifier-BERT/app  # Override working directory
         run: |
           docker build -t model-app-1 .
           docker run -d -v mlruns:src/app/volume_mlruns model-app-1 python3 server.py
