@@ -29,7 +29,7 @@ def main():
 @app.get('/')
 def read_root():
     """ Welcome page of the API """
-    return {'message': 'Welcome to the model API, to access the interface go to Public-IP-EC2:8000/predict.'}
+    return {'message': 'Welcome to the model API, to access the interface go to Public-IP-EC2:8000/predict if you are using an EC2, or localhost:8000/predict on a personal computer'}
 
 # Mount the Gradio app to the FastAPI app
 app = gr.mount_gradio_app(app, main(), path="/predict")
