@@ -68,7 +68,6 @@ jobs:
           docker build -t model-app-1 .
           docker run -d -v mlruns:/src/app/volume_mlruns model-app-1 python3 server.py
           docker exec $(docker ps -alq) cp -r volume_mlruns /src/app/mlruns
-          docker exec $(docker ps -alq) rm -rf /src/app/volume_mlruns
           docker commit $(docker ps -alq) model-app-1
           docker tag model-app-1:latest ${{ secrets.DOCKER_USERNAME }}/model-app-1:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/model-app-1:latest
