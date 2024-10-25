@@ -65,7 +65,6 @@ if __name__ == '__main__':
     mlflow.set_tracking_uri("sqlite:///mlruns/mlflow.db") # Where to save the result
 
     with mlflow.start_run() as run :
-
         OUTPUT_MODEL_DIR= f'runs:/{run.info.run_id}/text-classifier'
     ### Preparation for trainings
         training_args = TrainingArguments(
@@ -95,7 +94,6 @@ if __name__ == '__main__':
             compute_metrics=compute_metrics
         ) # Trainer setup
         
-        
         ### Training  model
         trainer.train()
         classification_pipeline = pipeline("text-classification", model=trainer.model, tokenizer=tokenizer)
@@ -113,3 +111,5 @@ if __name__ == '__main__':
             signature=signature,
            input_example=input_example
     )
+        print(f"✨ The run ID of the trained model is: {run.info.run_id} ✨")
+
