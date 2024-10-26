@@ -12,3 +12,4 @@ data/.DS_Store
 data_analysis
 app/mlruns
 .gitignore
+app/test

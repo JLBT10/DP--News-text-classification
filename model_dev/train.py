@@ -19,12 +19,14 @@ from utils.metrics import compute_metrics
 from utils.general import select_n_rows
 from utils.labels_processing import *
 from utils.map_functions import *
+import torch
 
 if __name__ == '__main__':
     ### Defining constant
     DATASET_PATH = './data/inshort_dataset' #Dataset path on github
     CHECKPOINT = "bert-base-cased" # Name of the model
-    
+    DEVICE =   torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
     ### Loading data
     inshort_data = load_from_disk(DATASET_PATH)
@@ -96,13 +98,15 @@ if __name__ == '__main__':
         
         ### Training  model
         trainer.train()
-        classification_pipeline = pipeline("text-classification", model=trainer.model, tokenizer=tokenizer)
+        classification_pipeline = pipeline("text-classification", model=trainer.model, tokenizer=tokenizer,device=DEVICE)
+        
         # Exemple d'entrée pour la signature
         input_example = ["This is a great movie!"]
         output_example = classification_pipeline(input_example)
 
         # Inférer la signature du modèle
         signature = infer_signature(input_example, output_example)
+
         ### Save model pipeline for inference
         model_info = mlflow.transformers.log_model(
             transformers_model=classification_pipeline,
