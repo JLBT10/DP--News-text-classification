@@ -21,7 +21,7 @@ from utils.map_functions import *
 import torch
 
 if __name__ == '__main__':
-    
+
     ### Defining constant
     DATASET_PATH = './data/inshort_dataset' #Dataset path on github
     CHECKPOINT = "bert-base-cased" # Name of the model
@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
         ### Save model pipeline for inference
         model_info = mlflow.transformers.log_model(
-            transformers_model=trainer.model,
+            transformers_model=classification_pipeline,
             artifact_path="text-classifier",
             task="text-classification",
             signature=signature,
