@@ -109,7 +109,7 @@ For convenience, in this setup, the `run_id` of `d8db502f9ce541289052a3ca85c4877
 
 2. Launch the container with the run_id that you got from your training. Use it to run the server.py :
    ```bash
-   docker run -it -p 8000:8000 jeanluc073/model-app-2 python3 server.py --run_id <RUN_ID>
+   docker run -it -p 8000:8000 -v "./mlruns:/src/app/mlruns" jeanluc073/model-app-2 python3 server.py --run_id <RUN_ID>
    ```
 #### Accessing the API
 
