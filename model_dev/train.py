@@ -2,6 +2,7 @@
 
 ### Import necessary libraries
 import mlflow
+import os
 # Transformers Library Imports
 from transformers import (
     AutoModelForSequenceClassification,
@@ -45,9 +46,19 @@ if __name__ == '__main__':
     inshort_data = inshort_data.cast_column("labels", features_class) # Insert it into the dataset columns
 
     ### Split the dataset into train and validation using labels columns to stratify (it handles imbalance)
-    inshort_data = inshort_data.train_test_split(test_size=0.3,shuffle=True, stratify_by_column="labels",seed =42)
+    inshort_data = inshort_data.train_test_split(test_size=0.3,shuffle=True, stratify_by_column="labels",seed=42)
+    
+    # Define the path to the evaluation dataset
+    eval_dataset_path = "./data/eval_dataset"
 
-    ### Processing data
+    # Check if the evaluation dataset already exists
+    if not os.path.exists(eval_dataset_path):
+        # Save the test data as the evaluation dataset
+        inshort_data["test"].save_to_disk(eval_dataset_path)
+    else:
+        print("The eval_dataset already exists. Skipping save step.")
+
+        ### Processing data
     tokenizer = AutoTokenizer.from_pretrained(CHECKPOINT) # Loading the tokenizer
         
     tokenized_datasets = inshort_data.map(lambda df: tokenize_function(df,tokenizer), 

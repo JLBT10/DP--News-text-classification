@@ -13,3 +13,11 @@ data_analysis
 app/mlruns
 .gitignore
 app/test
+model_dev
+runing
+data
+runs
+../.DS_Store
+../.gitignore
+ .DS_Store
+ data/.DS_Store
