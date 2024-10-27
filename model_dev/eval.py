@@ -17,8 +17,8 @@ parser.add_argument('--run_id', type=str, required=True, help='MLflow run ID to 
 args = parser.parse_args()
 
 # Load model artifacts using the provided run_id
-model_path = f"./mlruns/{args.run_id}/artifacts/text-classifier/model"
-tokenizer_path = f"./mlruns/{args.run_id}/artifacts/text-classifier/components/tokenizer"
+model_path = f"./mlruns/1/{args.run_id}/artifacts/text-classifier/model"
+tokenizer_path = f"./mlruns/1/{args.run_id}/artifacts/text-classifier/components/tokenizer"
 
 # Copy the model and tokenizer directories if they exist
 shutil.copytree(model_path, "./mlruns/HF_model", dirs_exist_ok=True)
