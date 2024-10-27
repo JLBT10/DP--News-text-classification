@@ -17,9 +17,23 @@ These instructions will guide you through setting up the project locally or on a
 ### Prerequisites
 
 - **Amazon EC2 Hardware Requirements**
-  - **OS**: Linux/Ubuntu
-  - **AMI**: Deep Learning OSS Nvidia Driver AMI GPU PyTorch 2.3.0 (Ubuntu 20.04)
-  - **EBS**: Minimum of 100 GB
+  - **Operating System**: Linux/Ubuntu
+  - **AMI**: Deep Learning AMI with NVIDIA Driver & PyTorch 2.3.0 (Ubuntu 20.04)
+  - **Storage**: Minimum of 100 GB EBS volume
+
+#### EC2 Instance Configuration Steps
+
+1. **When creating the EC2 instance, ensure the following options are selected:**
+   - **Allow SSH traffic from your IP**
+   - **Allow HTTP and HTTPS traffic from the internet**
+
+2. **Update Security Group to Open Required Ports:**
+   - Go to the EC2 Security Group settings.
+   - Add two custom TCP rules:
+     - **Port 5000**: To access MLflow's tracking server.
+     - **Port 8000**: To test and interact with the model’s API interface.
+     - 
+This setup enables secure access for SSH and web traffic, along with open ports to view MLflow logs and test the model from your browser.
 
 ### Setup
 
@@ -32,8 +46,8 @@ cd NewsClassifier-BERT
 ### Docker Images
 
 Two Docker images are used in this project:
-1. `model_dev_1` - for model training with MLflow tracking
-2. `model-app-1` - for serving the model and running inferences
+1. `model_dev_2` - for model training with MLflow tracking
+2. `model-app-2` - for serving the model and running inferences
 
 These images are hosted on Docker Hub and can be pulled directly to your environment.
 
@@ -49,21 +63,17 @@ The training image has been built and saved on Docker Hub via the CI/CD pipeline
 
 1. Pull the Docker image required for training:
    ```bash
-   docker pull jeanluc073/model_dev_1
+   docker pull jeanluc073/model_dev_2
    ```
 
 2. Start the training process using the command below. The MLflow tracking server will be available on port `5000`:
 
    ```bash
-   docker run -it -p 5000:5000 --gpus all jeanluc073/model_dev_1 sh run.sh
+   mkdir -p mlruns
+   docker run -it -p 5000:5000 --gpus all -v ./mlruns:/src/model_dev/mlruns jeanluc073/model_dev_2 sh run.sh
    ```
+  The `run.sh` script launches MLflow and the training script.
 
-   The `run.sh` script launches MLflow and the training script:
-   ```bash
-   #!/bin/bash
-   venv/bin/mlflow server --backend-store-uri sqlite:///mlruns/mlflow.db --default-artifact-root /src/model_dev/mlruns --port 5000 --host 0.0.0.0 > mlflow.log 2>&1 &
-   venv/bin/python3 train.py
-   ```
 
 3. **Monitoring MLflow**:
    - **EC2**: Access MLflow at `http://<EC2_PUBLIC_IP>:5000` in your browser.
@@ -71,7 +81,7 @@ The training image has been built and saved on Docker Hub via the CI/CD pipeline
 
 After training completes, MLflow will log a unique `run_id` associated with this specific model training session. **Make sure to save this `run_id`, as it will be required to perform inferences via the API.** 
 
-For convenience, in this setup, the `run_id` of `9bb19337ee05433b8f07d387fcc9d967` corresponds to the primary training session for this model. This `run_id` allows the API container to access the correct model artifacts, ensuring the model used for inference matches the trained configuration and parameters.
+For convenience, in this setup, the `run_id` of `d8db502f9ce541289052a3ca85c4877b` corresponds to the primary training session for this model and already available in the container if you wish to try it. This `run_id` allows the API container to access the correct model artifacts, ensuring the model used for inference matches the trained configuration and parameters.
 
 ---
 
@@ -81,14 +91,18 @@ For convenience, in this setup, the `run_id` of `9bb19337ee05433b8f07d387fcc9d96
 
 1. Pull the Docker image for the model API:
    ```bash
-   docker pull jeanluc073/model-app-1
+   docker pull jeanluc073/model-app-2
    ```
 
-2. Launch the container and start the API server, using `9bb19337ee05433b8f07d387fcc9d967` as the argument for the run_id obtained during the training step:
+2. Launch the container and start the API server, using `d8db502f9ce541289052a3ca85c4877b` as the argument for the run_id obtained during the training step:
    ```bash
-   docker run -it -p 8000:8000 jeanluc073/model-app-1 python3 server.py --run_id 9bb19337ee05433b8f07d387fcc9d967
+   docker run -it -p 8000:8000 jeanluc073/model-app-2 python3 server.py --run_id d8db502f9ce541289052a3ca85c4877b
    ```
 
+3. ALTERNATIVELY, launch the container with the run_id that you got from your training. Use it to run the server.py :
+   ```bash
+   docker run -it -p 8000:8000 jeanluc073/model-app-2 python3 server.py --run_id <RUN_ID>
+   ```
 #### Accessing the API
 
 To use the API and interact with the model:
