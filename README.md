@@ -1,14 +1,18 @@
-Certainly! I'll update the README to include details on accessing the MLflow tracking server during training on port 5000.
+# NewsClassifier-BERT
+
+This project is a BERT-based news classifier that has been trained and managed through a CI/CD pipeline. The model training process is automated with GitHub Actions, using a self-hosted runner on an EC2 instance. Upon code push, the CI/CD pipeline:
+
+1. Builds a Docker image containing the training environment.
+2. Launches the model training, tracking metrics and artifacts with MLflow.
+3. Commits the trained model image and pushes it to Docker Hub.
+
+The Docker images for both the training environment and model API are stored in Docker Hub, enabling easy deployment and inference. The instructions below guide you through setting up and using the model on EC2 or locally.
 
 ---
 
-# NewsClassifier-BERT
-
-This project is a BERT-based news classifier that trains on a custom dataset, with training tracked by MLflow. Model inference is made available via an API hosted on an EC2 instance.
-
 ## Getting Started
 
-These instructions will guide you through setting up the project locally or on an Amazon EC2 instance, as well as how to run training and inference.
+These instructions will guide you through setting up the project locally or on an Amazon EC2 instance and running training and inference.
 
 ### Prerequisites
 
@@ -39,20 +43,35 @@ These images are hosted on Docker Hub and can be pulled directly to your environ
 
 ### Step 1: Training the Model
 
-On your EC2 instance, pull the Docker image required for training:
-```bash
-docker pull jeanluc073/model_dev_1
-```
+The training image has been built and saved on Docker Hub via the CI/CD pipeline, enabling you to run training directly.
 
-Once the image is pulled, start the training process. The MLflow tracking server will be available on port `5000`:
-```bash
-docker run -it -p 5000:5000 --gpus all jeanluc073/model_dev_1 python3 train.py
-```
+#### On EC2 or Local Machine
 
-This command will start the training script and run MLflow within the Docker container. You can monitor the training process by accessing MLflow:
-- **EC2**: Visit `http://<EC2_PUBLIC_IP>:5000` in your browser to track metrics, parameters, and artifacts for each run.
-  
+1. Pull the Docker image required for training:
+   ```bash
+   docker pull jeanluc073/model_dev_1
+   ```
+
+2. Start the training process using the command below. The MLflow tracking server will be available on port `5000`:
+
+   ```bash
+   docker run -it -p 5000:5000 --gpus all jeanluc073/model_dev_1 sh run.sh
+   ```
+
+   The `run.sh` script launches MLflow and the training script:
+   ```bash
+   #!/bin/bash
+   venv/bin/mlflow server --backend-store-uri sqlite:///mlruns/mlflow.db --default-artifact-root /src/model_dev/mlruns --port 5000 --host 0.0.0.0 > mlflow.log 2>&1 &
+   venv/bin/python3 train.py
+   ```
+
+3. **Monitoring MLflow**:
+   - **EC2**: Access MLflow at `http://<EC2_PUBLIC_IP>:5000` in your browser.
+   - **Localhost**: If running locally, visit `http://localhost:5000`.
+
 After training completes, MLflow will display a `run_id`. **Take note of this `run_id`** as it will be needed for inference using the API.
+
+---
 
 ### Step 2: Running Inference with the API
 
@@ -71,37 +90,55 @@ After training completes, MLflow will display a `run_id`. **Take note of this `r
 #### Accessing the API
 
 To use the API and interact with the model:
-- **On EC2**: Obtain the public IP of the EC2 instance and map it to port `8000` in your browser to access the API's welcome page.
-  - Visit `http://<EC2_PUBLIC_IP>:8000` for the main interface.
-  - Use `http://<EC2_PUBLIC_IP>:8000/predict` to access the Gradio interface for testing.
+- **On EC2**:
+  - **Welcome Page**: Visit `http://<EC2_PUBLIC_IP>:8000` in your browser.
+  - **Prediction Interface**: Visit `http://<EC2_PUBLIC_IP>:8000/predict` for the Gradio interface for testing.
 
-- **On a Local Computer**: If running locally, visit:
-  - `http://localhost:8000` for the welcome page.
-  - `http://localhost:8000/predict` for the prediction interface.
+- **On Localhost**: If running locally:
+  - **Welcome Page**: Go to `http://localhost:8000`.
+  - **Prediction Interface**: Go to `http://localhost:8000/predict`.
 
 ---
 
 ## Summary of Commands
 
 ### Training
-```bash
-docker pull jeanluc073/model_dev_1
-docker run -it -p 5000:5000 --gpus all jeanluc073/model_dev_1 python3 train.py
-```
+
+1. **Docker Image Pull**:
+   ```bash
+   docker pull jeanluc073/model_dev_1
+   ```
+   
+2. **Start Training with MLflow Tracking**:
+   ```bash
+   docker run -it -p 5000:5000 --gpus all jeanluc073/model_dev_1 sh run.sh
+   ```
+
+3. **MLflow Access**:
+   - **EC2**: `http://<EC2_PUBLIC_IP>:5000`
+   - **Localhost**: `http://localhost:5000`
 
 ### Running the Model API
-```bash
-docker pull jeanluc073/model-app-1
-docker run -it -p 8000:8000 jeanluc073/model-app-1 python3 server.py --run_id <RUN_ID>
-```
 
-### Accessing MLflow and API Interfaces
-- **MLflow (Training)**: `http://<EC2_PUBLIC_IP>:5000` 
-- **Model API**:
-  - **EC2**: `http://<EC2_PUBLIC_IP>:8000` or `http://<EC2_PUBLIC_IP>:8000/predict`
-  - **Localhost**: `http://localhost:8000` or `http://localhost:8000/predict`
+1. **Docker Image Pull**:
+   ```bash
+   docker pull jeanluc073/model-app-1
+   ```
 
---- 
+2. **Start API Server**:
+   ```bash
+   docker run -it -p 8000:8000 jeanluc073/model-app-1 python3 server.py --run_id <RUN_ID>
+   ```
+
+3. **API Access**:
+   - **EC2**:
+     - **Welcome Page**: `http://<EC2_PUBLIC_IP>:8000`
+     - **Prediction Interface**: `http://<EC2_PUBLIC_IP>:8000/predict`
+   - **Localhost**:
+     - **Welcome Page**: `http://localhost:8000`
+     - **Prediction Interface**: `http://localhost:8000/predict`
+
+---
 
 ## Additional Information
 
