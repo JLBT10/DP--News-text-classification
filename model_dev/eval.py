@@ -1,3 +1,4 @@
+import argparse
 from sklearn.metrics import confusion_matrix
 import numpy as np
 import mlflow
@@ -8,40 +9,51 @@ from utils.metrics import *
 from utils.general import select_n_rows
 from utils.labels_processing import *
 from utils.map_functions import *
+import shutil 
 
-# Load the model and tokenizer (you can replace with your specific model)
-model_name = "model_dev/runs/best_model"
-model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=4)
-tokenizer = AutoTokenizer.from_pretrained(model_name)
+# Set up command-line argument parsing
+parser = argparse.ArgumentParser(description='Evaluate a model using MLflow run_id.')
+parser.add_argument('--run_id', type=str, required=True, help='MLflow run ID to load the model.')
+args = parser.parse_args()
+
+# Load model artifacts using the provided run_id
+model_path = f"./model/{args.run_id}/artifacts/text-classifier/model"
+tokenizer_path = f"./model/{args.run_id}/artifacts/text-classifier/components/tokenizer"
+
+# Copy the model and tokenizer directories if they exist
+shutil.copytree(model_path, "./model/HF_model", dirs_exist_ok=True)
+shutil.copytree(tokenizer_path, "./model/HF_model", dirs_exist_ok=True)
+
+# Load the model and tokenizer
+model = AutoModelForSequenceClassification.from_pretrained("./model/HF_model")
+tokenizer = AutoTokenizer.from_pretrained("./model/HF_model")
 
 # Load the dataset from disk and shuffle it
-dataset = load_from_disk("./model_dev/data/inshort_dataset").shuffle(seed=42).select(range(2))
+dataset = load_from_disk("./data/eval_dataset")
 
-### Processing Labels
-labels = dataset.unique("labels") # Get a list of unique labels
-label2id, id2label = get_label2id_id2label(labels) # Get the mapping label2id and id2label
+# Processing Labels
+labels = sorted(dataset.unique("labels"))  # Get a list of unique labels
+label2id, id2label = get_label2id_id2label(labels)  # Get the mapping label2id and id2label
+features_class = ClassLabel(names=labels)  # Define ClassLabel for stratified split wrt labels columns
 
+dataset = dataset.map(lambda example: convert_label_to_id(example, label2id))
+dataset = dataset.cast_column("labels", features_class)  # Insert into the dataset columns
 
-features_class = ClassLabel(names=labels) #Define ClassLabel in order to stratified split wr to labels columns
-
-dataset = dataset.map(lambda example : convert_label_to_id(example,label2id))
-dataset = dataset.cast_column("labels", features_class) # Insert it into the dataset columns
-
-tokenized_dataset = dataset.map(lambda df: tokenize_function(df,tokenizer))
- ### Let's define the data collator for classification tasks
+tokenized_dataset = dataset.map(lambda df: tokenize_function(df, tokenizer))
+# Define the data collator for classification tasks
 data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
-mlflow.set_experiment(experiment_name="Validation") # Name of the experience
-mlflow.set_tracking_uri("sqlite:///model_dev/mlruns/mlflow.db") # Where to save the result
 
-# Define the Trainer
-trainer = Trainer(
-    model=model,
-    eval_dataset=tokenized_dataset,  # Pass the dataset for evaluation
-    data_collator=data_collator,
-    compute_metrics=compute_metrics
-)
+mlflow.set_experiment(experiment_name="Validation")  # Name of the experiment
+mlflow.set_tracking_uri("sqlite:///mlruns/mlflow.db")  # Where to save the results
+with mlflow.start_run() as run :
+    # Define the Trainer
+    trainer = Trainer(
+        model=model,
+        eval_dataset=tokenized_dataset,  # Pass the dataset for evaluation
+        data_collator=data_collator,
+        compute_metrics=eval_compute_metrics
+    )
 
-# Evaluate the model
-metrics = trainer.evaluate()
-
-print(metrics)
+    # Evaluate the model
+    metrics = trainer.evaluate()
+    print(metrics)  # Optionally print the evaluation metrics

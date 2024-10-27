@@ -2,7 +2,6 @@
 
 ### Import necessary libraries
 import mlflow
-import os
 # Transformers Library Imports
 from transformers import (
     AutoModelForSequenceClassification,
@@ -22,11 +21,13 @@ from utils.map_functions import *
 import torch
 
 if __name__ == '__main__':
+    
     ### Defining constant
     DATASET_PATH = './data/inshort_dataset' #Dataset path on github
     CHECKPOINT = "bert-base-cased" # Name of the model
-    DEVICE =   torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    DEVICE =  torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+    print("DEVICE IS :", DEVICE)
 
     ### Loading data
     inshort_data = load_from_disk(DATASET_PATH)
@@ -35,11 +36,9 @@ if __name__ == '__main__':
     labels = inshort_data.unique("labels") # Get a list of unique labels
     label2id, id2label = get_label2id_id2label(labels) # Get the mapping label2id and id2label
 
-    
     features_class = ClassLabel(names=labels) #Define ClassLabel in order to stratified split wr to labels columns
     
     inshort_data = inshort_data.map(lambda example : convert_label_to_id(example,label2id))
-    #convert_label_to_id(inshort_data,label2id)
     inshort_data = inshort_data.cast_column("labels", features_class) # Insert it into the dataset columns
    
     #features_class
@@ -47,13 +46,12 @@ if __name__ == '__main__':
 
     ### Split the dataset into train and validation using labels columns to stratify (it handles imbalance)
     inshort_data = inshort_data.train_test_split(test_size=0.3,shuffle=True, stratify_by_column="labels")
-    
+
     ### Processing data
     tokenizer = AutoTokenizer.from_pretrained(CHECKPOINT) # Loading the tokenizer
         
     tokenized_datasets = inshort_data.map(lambda df: tokenize_function(df,tokenizer), 
      batched=True, remove_columns=["text"]) #Tokenization of sentences
-
 
     ### Loading the model
     model = AutoModelForSequenceClassification.from_pretrained(CHECKPOINT, num_labels=7,
@@ -67,7 +65,7 @@ if __name__ == '__main__':
     mlflow.set_tracking_uri("sqlite:///mlruns/mlflow.db") # Where to save the result
 
     with mlflow.start_run() as run :
-        OUTPUT_MODEL_DIR= f'runs:/{run.info.run_id}/text-classifier'
+
     ### Preparation for trainings
         training_args = TrainingArguments(
             output_dir="./checkpoints",
@@ -98,8 +96,9 @@ if __name__ == '__main__':
         
         ### Training  model
         trainer.train()
+
         classification_pipeline = pipeline("text-classification", model=trainer.model, tokenizer=tokenizer,device=DEVICE)
-        
+
         # Exemple d'entrée pour la signature
         input_example = ["This is a great movie!"]
         output_example = classification_pipeline(input_example)
@@ -109,7 +108,7 @@ if __name__ == '__main__':
 
         ### Save model pipeline for inference
         model_info = mlflow.transformers.log_model(
-            transformers_model=classification_pipeline,
+            transformers_model=trainer.model,
             artifact_path="text-classifier",
             task="text-classification",
             signature=signature,

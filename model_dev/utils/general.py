@@ -46,6 +46,6 @@ def select_n_rows(hf_dataset: DatasetDict | Dataset ,nrow_to_keep:int)-> Dataset
         return hf_dataset.select(range(min(nrow_to_keep, len(hf_dataset))))
     else:
         # Lever une exception si l'entrée n'est ni DatasetDict ni Dataset
-        raise TypeError("hf_dataset doit être un DatasetDict ou un Dataset du package Hugging Face.")
+        raise TypeError("hf_dataset must be a DatasetDict or a Dataset from ugging Face package.")
 
 
