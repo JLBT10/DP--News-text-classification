@@ -58,7 +58,7 @@ jobs:
           docker volume create mlruns
           docker run -d --gpus all -p 5000:5000 -v mlruns:/src/model_dev/mlruns_tmp model_dev_2 sh run.sh
           docker start $(docker ps -alq) 
-          docker exec $(docker ps -alq) cp -r mlruns_tmp /src/model_dev/mlruns
+          docker exec $(docker ps -alq) cp -r ./mlruns_tmp/* /src/model_dev/mlruns
           docker commit $(docker ps -alq) model_dev_2 
           docker tag model_dev_2:latest ${{ secrets.DOCKER_USERNAME }}/model_dev_2:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/model_dev_2:latest
