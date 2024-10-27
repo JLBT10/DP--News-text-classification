@@ -19,7 +19,7 @@ These instructions will guide you through setting up the project locally or on a
 - **Amazon EC2 Hardware Requirements**
   - **OS**: Linux/Ubuntu
   - **AMI**: Deep Learning OSS Nvidia Driver AMI GPU PyTorch 2.3.0 (Ubuntu 20.04)
-  - **EBS**: Minimum of 60 GB
+  - **EBS**: Minimum of 100 GB
 
 ### Setup
 
@@ -69,7 +69,9 @@ The training image has been built and saved on Docker Hub via the CI/CD pipeline
    - **EC2**: Access MLflow at `http://<EC2_PUBLIC_IP>:5000` in your browser.
    - **Localhost**: If running locally, visit `http://localhost:5000`.
 
-After training completes, MLflow will display a `run_id`. **Take note of this `run_id`** as it will be needed for inference using the API.
+After training completes, MLflow will log a unique `run_id` associated with this specific model training session. **Make sure to save this `run_id`, as it will be required to perform inferences via the API.** 
+
+For convenience, in this setup, the `run_id` of `9bb19337ee05433b8f07d387fcc9d967` corresponds to the primary training session for this model. This `run_id` allows the API container to access the correct model artifacts, ensuring the model used for inference matches the trained configuration and parameters.
 
 ---
 
@@ -82,9 +84,9 @@ After training completes, MLflow will display a `run_id`. **Take note of this `r
    docker pull jeanluc073/model-app-1
    ```
 
-2. Launch the container and run the API server, replacing `<RUN_ID>` with your specific `run_id` from the training step:
+2. Launch the container and start the API server, using `9bb19337ee05433b8f07d387fcc9d967` as the argument for the run_id obtained during the training step:
    ```bash
-   docker run -it -p 8000:8000 jeanluc073/model-app-1 python3 server.py --run_id <RUN_ID>
+   docker run -it -p 8000:8000 jeanluc073/model-app-1 python3 server.py --run_id 9bb19337ee05433b8f07d387fcc9d967
    ```
 
 #### Accessing the API
@@ -97,46 +99,6 @@ To use the API and interact with the model:
 - **On Localhost**: If running locally:
   - **Welcome Page**: Go to `http://localhost:8000`.
   - **Prediction Interface**: Go to `http://localhost:8000/predict`.
-
----
-
-## Summary of Commands
-
-### Training
-
-1. **Docker Image Pull**:
-   ```bash
-   docker pull jeanluc073/model_dev_1
-   ```
-   
-2. **Start Training with MLflow Tracking**:
-   ```bash
-   docker run -it -p 5000:5000 --gpus all jeanluc073/model_dev_1 sh run.sh
-   ```
-
-3. **MLflow Access**:
-   - **EC2**: `http://<EC2_PUBLIC_IP>:5000`
-   - **Localhost**: `http://localhost:5000`
-
-### Running the Model API
-
-1. **Docker Image Pull**:
-   ```bash
-   docker pull jeanluc073/model-app-1
-   ```
-
-2. **Start API Server**:
-   ```bash
-   docker run -it -p 8000:8000 jeanluc073/model-app-1 python3 server.py --run_id <RUN_ID>
-   ```
-
-3. **API Access**:
-   - **EC2**:
-     - **Welcome Page**: `http://<EC2_PUBLIC_IP>:8000`
-     - **Prediction Interface**: `http://<EC2_PUBLIC_IP>:8000/predict`
-   - **Localhost**:
-     - **Welcome Page**: `http://localhost:8000`
-     - **Prediction Interface**: `http://localhost:8000/predict`
 
 ---
 
