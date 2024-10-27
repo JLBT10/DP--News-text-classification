@@ -31,14 +31,6 @@ tokenizer = AutoTokenizer.from_pretrained("./model/HF_model")
 # Load the dataset from disk and shuffle it
 dataset = load_from_disk("./data/eval_dataset")
 
-# Processing Labels
-labels = sorted(dataset.unique("labels"))  # Get a list of unique labels
-label2id, id2label = get_label2id_id2label(labels)  # Get the mapping label2id and id2label
-features_class = ClassLabel(names=labels)  # Define ClassLabel for stratified split wrt labels columns
-
-dataset = dataset.map(lambda example: convert_label_to_id(example, label2id))
-dataset = dataset.cast_column("labels", features_class)  # Insert into the dataset columns
-
 tokenized_dataset = dataset.map(lambda df: tokenize_function(df, tokenizer))
 # Define the data collator for classification tasks
 data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
@@ -54,6 +46,6 @@ with mlflow.start_run() as run :
         compute_metrics=eval_compute_metrics
     )
 
-    # Evaluate the model
+        # Evaluate the model
     metrics = trainer.evaluate()
     print(metrics)  # Optionally print the evaluation metrics

@@ -45,7 +45,7 @@ if __name__ == '__main__':
     inshort_data = inshort_data.cast_column("labels", features_class) # Insert it into the dataset columns
 
     ### Split the dataset into train and validation using labels columns to stratify (it handles imbalance)
-    inshort_data = inshort_data.train_test_split(test_size=0.3,shuffle=True, stratify_by_column="labels")
+    inshort_data = inshort_data.train_test_split(test_size=0.3,shuffle=True, stratify_by_column="labels",seed =42)
 
     ### Processing data
     tokenizer = AutoTokenizer.from_pretrained(CHECKPOINT) # Loading the tokenizer
@@ -100,7 +100,7 @@ if __name__ == '__main__':
         classification_pipeline = pipeline("text-classification", model=trainer.model, tokenizer=tokenizer,device=DEVICE)
 
         # Exemple d'entrée pour la signature
-        input_example = ["This is a great movie!"]
+        input_example = ["Vice President Kamala Harris delivered an address tonight on reproductive rights at a Houston rally featuring Beyoncé."]
         output_example = classification_pipeline(input_example)
 
         # Inférer la signature du modèle
