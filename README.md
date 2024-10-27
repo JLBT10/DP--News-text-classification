@@ -54,6 +54,19 @@ These images are hosted on Docker Hub and can be pulled directly to your environ
 ---
 
 ## User Guide
+### NB
+If you do not wish to train on your machine, you could test the already trained and saved model by running these two commands.
+
+1. Pull the Docker image for the model API:
+   ```bash
+   docker pull jeanluc073/model-app-2
+   ```
+
+2. Launch the container and start the API server, using `d8db502f9ce541289052a3ca85c4877b` as the argument for the run_id obtained during the training step:
+   ```bash
+   docker run -it -p 8000:8000 jeanluc073/model-app-2 python3 server.py --run_id d8db502f9ce541289052a3ca85c4877b
+   ```
+
 
 ### Step 1: Training the Model
 
@@ -94,12 +107,7 @@ For convenience, in this setup, the `run_id` of `d8db502f9ce541289052a3ca85c4877
    docker pull jeanluc073/model-app-2
    ```
 
-2. Launch the container and start the API server, using `d8db502f9ce541289052a3ca85c4877b` as the argument for the run_id obtained during the training step:
-   ```bash
-   docker run -it -p 8000:8000 jeanluc073/model-app-2 python3 server.py --run_id d8db502f9ce541289052a3ca85c4877b
-   ```
-
-3. ALTERNATIVELY, launch the container with the run_id that you got from your training. Use it to run the server.py :
+2. Launch the container with the run_id that you got from your training. Use it to run the server.py :
    ```bash
    docker run -it -p 8000:8000 jeanluc073/model-app-2 python3 server.py --run_id <RUN_ID>
    ```
