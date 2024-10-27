@@ -17,16 +17,16 @@ parser.add_argument('--run_id', type=str, required=True, help='MLflow run ID to 
 args = parser.parse_args()
 
 # Load model artifacts using the provided run_id
-model_path = f"./model/{args.run_id}/artifacts/text-classifier/model"
-tokenizer_path = f"./model/{args.run_id}/artifacts/text-classifier/components/tokenizer"
+model_path = f"./mlruns/{args.run_id}/artifacts/text-classifier/model"
+tokenizer_path = f"./mlruns/{args.run_id}/artifacts/text-classifier/components/tokenizer"
 
 # Copy the model and tokenizer directories if they exist
-shutil.copytree(model_path, "./model/HF_model", dirs_exist_ok=True)
-shutil.copytree(tokenizer_path, "./model/HF_model", dirs_exist_ok=True)
+shutil.copytree(model_path, "./mlruns/HF_model", dirs_exist_ok=True)
+shutil.copytree(tokenizer_path, "./mlruns/HF_model", dirs_exist_ok=True)
 
 # Load the model and tokenizer
-model = AutoModelForSequenceClassification.from_pretrained("./model/HF_model")
-tokenizer = AutoTokenizer.from_pretrained("./model/HF_model")
+model = AutoModelForSequenceClassification.from_pretrained("./mlruns/HF_model")
+tokenizer = AutoTokenizer.from_pretrained("./mlruns/HF_model")
 
 # Load the dataset from disk and shuffle it
 dataset = load_from_disk("./data/eval_dataset")
