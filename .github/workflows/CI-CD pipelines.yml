@@ -47,7 +47,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}  # Docker Hub username from GitHub Secrets
           password: ${{ secrets.DOCKER_PASSWORD }}  # Docker Hub password from GitHub Secrets
 
-      # Step 3: Build Docker image for training
+      # Step 3: Build Docker image for training.
       - name: Build Docker image for training
         run: |
           docker build -t model_dev_2 .
