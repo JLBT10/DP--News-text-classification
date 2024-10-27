@@ -50,26 +50,26 @@ jobs:
       # Step 3: Build Docker image for training
       - name: Build Docker image for training
         run: |
-          docker build -t model_dev_1 .
+          docker build -t model_dev_2 .
         
       # Build, train model, tag and push the Docker image for the model
       - name: Run training and generate artifacts
         run: |
           docker volume create mlruns
-          docker run --gpus all -p 5000:5000 -v mlruns:/src/model_dev/mlruns model_dev_1 sh run.sh
-          docker commit $(docker ps -alq) model_dev_1 
-          docker tag model_dev_1:latest ${{ secrets.DOCKER_USERNAME }}/model_dev_1:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/model_dev_1:latest
+          docker run --gpus all -p 5000:5000 -v mlruns:/src/model_dev/mlruns model_dev_2 sh run.sh
+          docker commit $(docker ps -alq) model_dev_2 
+          docker tag model_dev_2:latest ${{ secrets.DOCKER_USERNAME }}/model_dev_2:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/model_dev_2:latest
 
       # Build, mount volume, tag and push the Docker image for the app
       - name: Build Docker image for app
         working-directory: /home/ubuntu/actions-runner/_work/NewsClassifier-BERT/NewsClassifier-BERT/app  # Override working directory
         run: |
-          docker build -t model-app-1 .
-          docker run -d -m 15g -v mlruns:/src/app/volume_mlruns model-app-1 python3 server.py
+          docker build -t model-app-2 .
+          docker run -d -m 15g -v mlruns:/src/app/volume_mlruns model-app-2 python3 server.py
           docker exec $(docker ps -alq) cp -r volume_mlruns /src/app/mlruns
-          docker commit $(docker ps -alq) model-app-1
-          docker tag model-app-1:latest ${{ secrets.DOCKER_USERNAME }}/model-app-1:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/model-app-1:latest
+          docker commit $(docker ps -alq) model-app-2
+          docker tag model-app-2:latest ${{ secrets.DOCKER_USERNAME }}/model-app-2:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/model-app-2:latest
 
 
